@@ -1,0 +1,374 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+import { Field } from 'redux-form/immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import MenuItem from '@material-ui/core/MenuItem';
+import InputLabel from '@material-ui/core/InputLabel';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import {
+  Checkbox,
+  Select,
+  TextField,
+  Switch
+} from 'redux-form-material-ui';
+import {
+  fetchAction,
+  addAction,
+  closeAction,
+  submitAction,
+  removeAction,
+  editAction,
+  closeNotifAction
+} from 'dan-actions/CrudTbFrmActions';
+import {  Notification, CrudTableForm } from 'dan-components';
+import { anchorTable, dataApi } from './sampleData';
+import {API, obj} from '../../../service';
+
+const branch = 'crudTbFrmDemo';
+
+const renderRadioGroup = ({ input, ...rest }) => (
+  <RadioGroup
+    {...input}
+    {...rest}
+    valueselected={input.value}
+    onChange={(event, value) => input.onChange(value)}
+  />
+);
+
+// validation functions
+const required = value => (value == null ? 'Required' : undefined);
+const email = value => (
+  value && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)
+    ? 'Invalid email'
+    : undefined
+);
+
+const styles = ({
+  root: {
+    flexGrow: 1,
+  },
+  field: {
+    width: '100%',
+    marginBottom: 20
+  },
+  fieldBasic: {
+    width: '100%',
+    marginBottom: 20,
+    marginTop: 10
+  },
+  inlineWrap: {
+    display: 'flex',
+    flexDirection: 'row'
+  }
+});
+
+class CrudTbFormDemo extends Component {
+  dataTableLokal = {};
+  state = {
+    page: 0,
+    count: 100,
+    data: [],
+    obj: {"d":"d"},
+    title:"a"
+  };
+
+  componentDidMount() {
+    // dataTableLokal = {...dataApi};
+    // console.log(`CrudTbFormDemo, props: ${JSON.stringify(this.props)}`);
+    var jsonStr = '{"theTeam":[{"teamId":"1","status":"pending"},{"teamId":"2","status":"member"},{"teamId":"3","status":"member"}]}';
+
+    var obj = JSON.parse(jsonStr);
+    obj['theTeam'].push({"teamId":"4","status":"pending"});
+    console.log(`CRUD, componentDidMount: ${JSON.stringify(obj)}`);
+    console.log(`CRUD, componentDidMount: ${jsonStr}`);
+    this.getData();
+  } 
+
+  F_APIResult = (res) => {
+      if(res.succes == 'true')
+      {
+          switch(res.target)
+          {
+              case "showDataArea":
+                  let dataContent = [];
+                  res.data.data.map(data => {
+                    dataContent.push([data.akode, data.anama, data.acatatan, data.aaktif]);
+                  });
+                  break;
+          }
+      }
+      else
+      {
+          switch(res.target)
+          {
+            
+          }
+      }
+  }
+
+  getData = () => {
+      let param = {
+        "target":"showDataArea",
+        "pageNumber":1,
+        "pageLimit":10,
+        "filter":"akode LIKE '%A%' OR akode LIKE '%C%'",
+        "orderBy":"akode DESC, anama",
+        "groupBy": ["akode", "anama"]
+      };
+      // console.log(`CRUD dataTableLokal: ${JSON.stringify(this.dataTableLokal)}`);
+      API.getDataArea(`?param=${JSON.stringify(param)}`).then(res => 
+      {
+          // this.dataTableLokal = [];
+          res.data.data.map(data => {
+            // this.dataTableLokal.push({"akode":data.akode, "anama":data.anama, "acatatan":data.acatatan});
+          });
+          // console.log(`CRUD dataTableLokal: ${JSON.stringify(this.dataTableLokal)}`);
+          // console.log(`CRUD dataApi: ${JSON.stringify(dataApi)}`);
+          // console.log(`CRUD dataTableLokal: ${this.dataTableLokal}`);
+
+      },
+      (err) => 
+      {
+          console.log(`err API: ${err}`);
+      });
+  };
+  saveRef = ref => {
+    this.ref = ref;
+    return this.ref;
+  };
+
+  render() {
+    const {
+      classes,
+      fetchData,
+      addNew,
+      closeForm,
+      submit,
+      removeRow,
+      editRow,
+      dataTable,
+      openForm,
+      initValues,
+      closeNotif,
+      messageNotif,
+    } = this.props;
+    // console.log(`CRUD dataTableLokal: ${this.dataTableLokal}`);
+    // const {dataTableLokal} = this.dataTableLokal;
+    const trueBool = true;
+    return (
+      <div>
+        <Notification close={() => closeNotif(branch)} message={messageNotif} />
+        <div className={classes.rootTable}>
+          <CrudTableForm
+            dataTable={dataTable}
+            openForm={openForm}
+            dataInit={dataApi}
+            anchor={anchorTable}
+            title="Nama Tabel"
+            fetchData={fetchData}
+            addNew={addNew}
+            closeForm={closeForm}
+            submit={submit}
+            removeRow={removeRow}
+            editRow={editRow}
+            branch={branch}
+            initValues={initValues}
+          >
+            {/* Create Your own form, then arrange or custom it as You like */}
+            <div>
+              <Field
+                name="kode"
+                component={TextField}
+                placeholder="Kode"
+                label="Kode"
+                validate={required}
+                required
+                ref={this.saveRef}
+                withRef
+                className={classes.field}
+              />
+            </div>
+            <div>
+              <Field
+                name="nama"
+                component={TextField}
+                placeholder="Nama"
+                label="Nama"
+                required
+                validate={[required]}
+                className={classes.field}
+              />
+            </div>
+            <div className={classes.field}>
+              <Field
+                name="catatan"
+                className={classes.field}
+                component={TextField}
+                placeholder="Catatan"
+                label="Catatan"
+                multiline={trueBool}
+                rows={4}
+              />
+            </div>
+            {/* No need create button or submit, because that already made in this component */}
+          </CrudTableForm>
+        </div>
+      </div>
+    );
+  }
+}
+
+renderRadioGroup.propTypes = {
+  input: PropTypes.object.isRequired,
+};
+
+CrudTbFormDemo.propTypes = {
+  dataTable: PropTypes.object.isRequired,
+  openForm: PropTypes.bool.isRequired,
+  classes: PropTypes.object.isRequired,
+  fetchData: PropTypes.func.isRequired,
+  addNew: PropTypes.func.isRequired,
+  closeForm: PropTypes.func.isRequired,
+  submit: PropTypes.func.isRequired,
+  removeRow: PropTypes.func.isRequired,
+  editRow: PropTypes.func.isRequired,
+  initValues: PropTypes.object.isRequired,
+  closeNotif: PropTypes.func.isRequired,
+  messageNotif: PropTypes.string.isRequired,
+};
+
+
+const mapStateToProps = state => ({
+  force: state, // force state from reducer
+  initValues: state.getIn([branch, 'formValues']),
+  dataTable: state.getIn([branch, 'dataTable']),
+  openForm: state.getIn([branch, 'showFrm']),
+  messageNotif: state.getIn([branch, 'notifMsg']),
+});
+
+const mapDispatchToProps = dispatch => ({
+  fetchData: (branch, items) => dispatch({branch, type: `${branch}/FETCH_DATA`, items}),
+  a: (branch, items) => dispatch(),
+  a: (branch, items) => dispatch(),
+  a: (branch, items) => dispatch(),
+  a: (branch, items) => dispatch(),
+  a: (branch, items) => dispatch(),
+  addNew: bindActionCreators(addAction, dispatch),
+  closeForm: bindActionCreators(closeAction, dispatch),
+  submit: bindActionCreators(submitAction, dispatch),
+  removeRow: bindActionCreators(removeAction, dispatch),
+  editRow: bindActionCreators(editAction, dispatch),
+  closeNotif: bindActionCreators(closeNotifAction, dispatch),
+});
+
+const CRD = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(CrudTbFormDemo);
+
+export default withStyles(styles)(CRD);
+
+
+
+
+
+///////////////////////////////////
+
+
+import React, { Component } from 'react';
+import { TextInput, Yup, withFormik, DisplayFormikState } from 'fix-helpFix/formik';
+import "fix-helpFix/formik.css";
+import { Helmet } from 'react-helmet';
+import brand from 'dan-api/dummy/brand';
+import { withStyles } from '@material-ui/core/styles';
+import { SourceReader, PapperBlock } from 'dan-components';
+
+const styles = ({
+  root: {
+    flexGrow: 1,
+  }
+});
+class City extends Component {
+  state = {
+    firstName: 'a',
+    lastName: 'b',
+    email: 'c'
+  }
+
+  FuncChange = (e, setFieldValue) => {
+    setFieldValue('lastName', 'dfdfdf')
+  }
+
+  
+  saveRef = ref => {this.ref = ref;return this.ref;};
+  
+  render() {
+    const title = brand.name + ' - Tablee ' + this.state.firstName;
+    const description = brand.desc;
+    return (
+      <div>
+        <Helmet>
+          <title>{title + this.state.firstName}</title>
+          <meta name="description" content={description} />
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={description} />
+          <meta property="twitter:title" content={title} />
+          <meta property="twitter:description" content={description} />
+        </Helmet>
+        
+        <PapperBlock title="CRUD" icon="ios-arrow-round-forward" desc="CRUD">
+          <div className="app">
+            <MyEnhancedForm user={this.state} onHandleChange={this.FuncChange} />
+          </div>
+        </PapperBlock>
+      </div>
+    );
+  }
+}
+
+export default withStyles(styles)(City);
+
+const yupValidate = {
+  firstName: Yup.string()
+    .min(2, "C'mon, your name is longer than that")
+    .required("First name is required."),
+  lastName: Yup.string()
+    .min(2, "C'mon, your name is longer than that")
+    .required("Last name is required."),
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required!")
+}
+
+const stateFormik = {
+  validationSchema: Yup.object().shape(yupValidate),
+  mapPropsToValues: ({ user }) => ({...user}),
+  handleSubmit: (payload, { setSubmitting }) => {
+    console.log(payload);
+    alert(payload.email);
+    setSubmitting(false);
+  },
+  displayName: "MyForm",
+}
+
+const MyForm = props => {
+  const {values,touched,errors,dirty,handleChange,handleBlur,handleSubmit,handleReset,isSubmitting,onHandleChange,setFieldValue} = props;
+  return (
+    <form onSubmit={handleSubmit} onChange={ev => onHandleChange(ev, setFieldValue)}>
+      <TextInput id="firstName"type="text"width="400"label="First Name"placeholder="John"error={touched.firstName && errors.firstName}value={values.firstName}onChange={ev => {handleChange(ev);onHandleChange(ev, setFieldValue)}}onBlur={handleBlur}/>
+      <TextInput id="lastName"type="text"width="200"label="Last Name"placeholder="Doe"error={touched.lastName && errors.lastName}value={values.lastName}onChange={handleChange}onBlur={handleBlur}/>
+      <TextInput id="email"type="email"width="600"label="Email"placeholder="Enter your email"error={touched.email && errors.email}value={values.email}onChange={handleChange}onBlur={handleBlur}/>
+      <button type="button"className="outline"onClick={handleReset}disabled={!dirty || isSubmitting}>Reset</button>
+      <button type="submit" disabled={isSubmitting}>Submit</button>
+      <DisplayFormikState {...props} />
+    </form>
+  );
+};
+
+const MyEnhancedForm = withFormik(stateFormik)(MyForm);

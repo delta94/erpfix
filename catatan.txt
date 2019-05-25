@@ -1,0 +1,69 @@
+
+      console.log(values);
+      console.log(values._root);
+      console.log(values._root.entries);
+      console.log(values._root.entries[0]);
+      console.log(values._root.entries[0][0]);
+      console.log(values._root.entries[0][1]);
+
+      https://stackoverflow.com/questions/51905125/mui-datatables-server-side-rendering
+
+      https://bvaughn.github.io/react-virtualized/#/components/Grid
+
+      ContohBagian
+Remove 0 elements from index 2, and insert "drum"Bagian
+var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+var removed = myFish.splice(2, 0, 'drum');
+
+// myFish is ["angel", "clown", "drum", "mandarin", "sturgeon"] 
+// removed is [], no elements removed
+Remove 1 element from index 3Bagian
+var myFish = ['angel', 'clown', 'drum', 'mandarin', 'sturgeon'];
+var removed = myFish.splice(3, 1);
+
+// removed is ["mandarin"]
+// myFish is ["angel", "clown", "drum", "sturgeon"]
+Remove 1 element from index 2, and insert "trumpet"Bagian
+var myFish = ['angel', 'clown', 'drum', 'sturgeon'];
+var removed = myFish.splice(2, 1, 'trumpet');
+
+// myFish is ["angel", "clown", "trumpet", "sturgeon"]
+// removed is ["drum"]
+Remove 2 elements from index 0, and insert "parrot", "anemone" and "blue"Bagian
+var myFish = ['angel', 'clown', 'trumpet', 'sturgeon'];
+var removed = myFish.splice(0, 2, 'parrot', 'anemone', 'blue');
+
+// myFish is ["parrot", "anemone", "blue", "trumpet", "sturgeon"] 
+// removed is ["angel", "clown"]
+Remove 2 elements from index 2Bagian
+var myFish = ['parrot', 'anemone', 'blue', 'trumpet', 'sturgeon'];
+var removed = myFish.splice(myFish.length - 3, 2);
+
+// myFish is ["parrot", "anemone", "sturgeon"] 
+// removed is ["blue", "trumpet"]
+Remove 1 element from index -2Bagian
+var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+var removed = myFish.splice(-2, 1);
+
+// myFish is ["angel", "clown", "sturgeon"] 
+// removed is ["mandarin"]
+Remove all elements after index 2 (incl.)Bagian
+var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+var removed = myFish.splice(2);
+
+// myFish is ["angel", "clown"] 
+// removed is ["mandarin", "sturgeon"]
+
+
+
+
+
+  constructor(props) {
+    super(props);
+    this.state = {  };
+    this.addNewLayout = this.addLayout.bind(this);
+  }
+
+  Initiating a saga action is usually done from your component. In this case by clicking on a button. Just make sure to wrap your onClick attribute with {} and use an arrow function. Don’t call the method directly from {this.mySagaAction()} as this will trigger eternal re-rendering loop.
+
+The correct way is: { () => { this.mySagaAction(); } }
