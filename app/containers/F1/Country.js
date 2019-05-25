@@ -6,7 +6,7 @@ class CRUD_Master extends React.Component
 {
   render() 
   {
-    const params = { 
+    const params = { //asdf
       source: 'country',
       primaryKey: 'ckode',
     
