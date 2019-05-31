@@ -70,11 +70,10 @@ class Form extends Component
           {
             props => 
             {
-
               const {values,touched, errors, dirty, handleChange, handleBlur, handleReset} = props;
               const items = [];  
 
-              idFocus = primaryKey
+              idFocus = primaryKey;
               if(editingId !== '')
                 for (const [index, value] of inputForm.entries())
                   if((value.id !== primaryKey))

@@ -15,7 +15,7 @@ class FloatingPanel extends React.Component
 
   onToggle = () =>
   {
-    this.setState({ expanded: !expanded });
+    this.setState({ expanded: !this.state.expanded });
   }
 
   render() 

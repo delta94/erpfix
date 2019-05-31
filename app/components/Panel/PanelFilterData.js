@@ -14,9 +14,8 @@ class PanelFilterData extends React.Component {
     expanded: false
   }
 
-  toggleExpand() {
-    const { expanded } = this.state;
-    this.setState({ expanded: !expanded });
+  toggleExpand = () => {
+    this.setState({ expanded: !this.state.expanded });
   }
 
   render() {

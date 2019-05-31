@@ -1,6 +1,8 @@
 import { lighten, darken, fade } from '@material-ui/core/styles/colorManipulator';
 import green from '@material-ui/core/colors/green';
 import red from '@material-ui/core/colors/red';
+import lightBlue from '@material-ui/core/colors/lightBlue';
+
 const styles = theme => ({
   root: {
     paddingRight: theme.spacing.unit,
@@ -81,13 +83,30 @@ const styles = theme => ({
   */
   stripped: {
     '& tbody tr:nth-child(even)': {
-      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 0.5) : theme.palette.grey[50]
+      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 0.5) : theme.palette.grey[100]
     }
   },
   hover: {
     '& tbody tr:hover': {
       background: theme.palette.type === 'dark' ? darken(theme.palette.primary.light, 0.8) : lighten(theme.palette.primary.light, 0.5)
     }
+  },
+  hovertd: {
+    '& tbody td:hover': {
+      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 1) : lightBlue[50]
+    },
+    '& tbody td:focus': {
+      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 0.5) : lightBlue[200]
+    }
+  },
+  tdWhite: {
+    background: theme.palette.type === 'dark' ? fade(theme.palette.grey[200], 0) : 'white'
+  },
+  tdReset: {
+    background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 0) : theme.palette.grey[100]
+  },
+  tdSelected: {
+      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[800], 0.5) : lightBlue[100]
   },
   bordered: {
     border: theme.palette.type === 'dark' ? `1px solid ${theme.palette.grey[900]}` : `1px solid ${theme.palette.primary.light}`,

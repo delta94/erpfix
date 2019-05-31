@@ -5,6 +5,7 @@ export Sidebar from './Sidebar/Sidebar';
 export BreadCrumb from './BreadCrumb/BreadCrumb';
 export SourceReader from './SourceReader/SourceReader';
 export PapperBlock from './PapperBlock/PapperBlock';
+export PapperFix from './PapperBlock/PapperFix';
 export SearchUi from './Search/SearchUi';
 // Landing Page
 export Banner from './LandingPage/Banner';

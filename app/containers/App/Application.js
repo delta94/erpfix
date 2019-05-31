@@ -29,7 +29,7 @@ import {
   Photos, Pricing, CheckoutPage, Error, Settings,
   HelpSupport, MapMarker, MapDirection, SearchMap,
   TrafficIndicator, StreetViewMap, NotFound, F1_Area, F1_Bank, F1_City, F1_Color,
-  F1_Branch, F1_Country
+  F1_Branch, F1_Country, F2_CR, F2_CD
 } from '../pageListAsync';
 
 class Application extends React.Component {
@@ -49,6 +49,8 @@ class Application extends React.Component {
           <Route path="/fix/f1/city" component={F1_City} />
           <Route path="/fix/f1/color" component={F1_Color} />
           <Route path="/fix/f1/country" component={F1_Country} />
+          <Route path="/fix/f2/cr" component={F2_CR} />
+          <Route path="/fix/f2/cd" component={F2_CD} />
           { /* Layout */ }
           <Route exact path="/fix/layouts" component={Parent} />
           <Route path="/fix/layouts/grid" component={Grid} />

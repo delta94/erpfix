@@ -95,5 +95,22 @@ module.exports = [
         link: '/fix/f1/country'
       },
     ]
+  },
+  {
+    key: 'finance',
+    name: 'Finannce',
+    icon: 'ios-paper-outline',
+    child: [
+      {
+        key: 'level_1',
+        name: 'Cash Receipt (CR)',
+        link: '/fix/f2/CR'
+      },
+      {
+        key: 'level_2',
+        name: 'Cash Delivery (CD)',
+        link: '/fix/f2/CD'
+      },
+    ]
   }
 ];
