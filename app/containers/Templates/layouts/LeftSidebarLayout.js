@@ -34,7 +34,7 @@ class LeftSidebarLayout extends React.Component {
       handleOpenGuide
     } = this.props;
     return (
-      <Fragment>
+      <Fragment >
         <Header
           toggleDrawerOpen={toggleDrawer}
           turnDarker={transform > 30}
@@ -78,9 +78,10 @@ class LeftSidebarLayout extends React.Component {
               unmountOnExit
               {...(pageLoaded ? { timeout: 700 } : {})}
             >
-              <div className={!pageLoaded ? classes.hideApp : ''}>
+              <div className={!pageLoaded ? classes.hideApp : ''} >
                 {/* Application content will load here */}
                 { children }
+                <table style={{tableLayout:'fixed', visibility:'hidden'}}/>
               </div>
             </Fade>
           </section>

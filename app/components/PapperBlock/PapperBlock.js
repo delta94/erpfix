@@ -23,24 +23,9 @@ class PapperBlock extends React.Component {
     } = this.props;
     return (
       <div>
-        <Paper className={classNames(classes.root, noMargin && classes.noMargin, colorMode && classes.colorMode)} elevation={0}>
-          <div className={classes.descBlock}>
-            <span className={classes.iconTitle}>
-              <Ionicon icon={icon} />
-            </span>
-            <div className={classes.titleText}>
-              <Typography variant="h6" component="h2" className={classes.title}>
-                {title}
-              </Typography>
-              <Typography component="p" className={classes.description}>
-                {desc}
-              </Typography>
-            </div>
-          </div>
           <section className={classNames(classes.content, whiteBg && classes.whiteBg, overflowX && classes.overflowX)}>
             {children}
           </section>
-        </Paper>
       </div>
     );
   }

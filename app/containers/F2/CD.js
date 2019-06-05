@@ -1,33 +1,41 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import Draggable from 'react-draggable';
- 
-class App extends React.Component {
- 
-  eventLogger = (e, data) => {
-    console.log('Event: ', e);
-    console.log('Data: ', data);
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import ComSearch from './ComSearch';
+
+
+class CD extends React.Component
+{
+  state = {open: true};
+
+  constructor(props, context) {
+    super(props, context);
+
+  }
+  
+  handleClickOpen = () => 
+  {
+    this.setState({open: true});
   };
- 
-  render() {
+
+  handleClose = () => 
+  {
+    this.setState({open: false});
+  };
+  
+  render()
+  {
+
     return (
-      <Draggable
-        axis="x"
-        handle=".handle"
-        defaultPosition={{x: 0, y: 0}}
-        position={null}
-        grid={[25, 25]}
-        scale={1}
-        onStart={this.handleStart}
-        onDrag={this.handleDrag}
-        onStop={this.handleStop}>
-        <div>
-          <div className="handle">Drag from here</div>
-          <div>This readme is really dragging on...</div>
-        </div>
-      </Draggable>
+      <div>
+        <Button variant="outlined" color="primary" onClick={this.handleClickOpen}>
+          Open form dialog
+        </Button>
+        <Dialog fullWidth={true} maxWidth = {'md'} open={this.state.open} onClose={this.handleClose} children="kosong"
+          PaperComponent={() => {return (<ComSearch />)}}/>
+      </div>
     );
   }
 }
- 
-ReactDOM.render(<App/>, document.body);
+
+export default CD;

@@ -88,7 +88,7 @@ const styles = theme => ({
   },
   hover: {
     '& tbody tr:hover': {
-      background: theme.palette.type === 'dark' ? darken(theme.palette.primary.light, 0.8) : lighten(theme.palette.primary.light, 0.5)
+      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 1) : lightBlue[50]
     }
   },
   hovertd: {
@@ -98,6 +98,9 @@ const styles = theme => ({
     '& tbody td:focus': {
       background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 0.5) : lightBlue[200]
     }
+  },
+  trHover: {
+    background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 1) : lightBlue[50]
   },
   tdWhite: {
     background: theme.palette.type === 'dark' ? fade(theme.palette.grey[200], 0) : 'white'
@@ -142,10 +145,10 @@ const styles = theme => ({
   },
   small: {
     '& tr': {
-      height: 24,
+      height: 35,
       '& td, th': {
         padding: '4px 10px',
-        fontSize: 12
+        fontSize: 14
       }
     }
   },

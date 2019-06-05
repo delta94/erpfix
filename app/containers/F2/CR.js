@@ -14,10 +14,12 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import styles from 'dan-components/Tables/tableStyle-jss';
 import RootRef from '@material-ui/core/RootRef';
+import Dialog from '@material-ui/core/Dialog';
+import ComSearch from './ComSearch';
 
 let ref    = {};
-let colFocus = 1;
-let rowFocus = 1;
+let colFocus = 0;
+let rowFocus = 0;
 let changeRowColIndex = false;
 
 class CR extends Component 
@@ -35,10 +37,10 @@ class CR extends Component
     this.maxData = 3;
     this.maxRow = 5;
 
-    ref.tbData = React.createRef();
+    ref.tb = React.createRef();
 
     this.state = {
-
+      openDialog: false
     };
 
     for (let r = 0;r<this.maxData; r++)
@@ -56,7 +58,7 @@ class CR extends Component
   
   componentDidMount()
   {
-    let arrTr = ref.tbData.current.children[1].children;
+    let arrTr = ref.tb.current.children[1].children;
     let row, col, contentTR, contentTD;
     for(row in arrTr)
     {
@@ -77,6 +79,16 @@ class CR extends Component
 
     this.setRowIndexColIndex(0, 0);
     ref.txtterimadari.focus();
+  }
+
+  openComSearch = () =>
+  {
+    this.setState({openDialog:true});
+  }
+
+  closeComSearch = () =>
+  {
+    this.setState({openDialog:false});
   }
 
   tdDblClick = (row, col) =>
@@ -180,15 +192,15 @@ class CR extends Component
 
   tdOnKeyDown = (e, row, col, value) =>
   {
-    switch(e.which) 
+    switch(e.key) 
     {        
-      case 13: // ENTER
+      case 'Enter': // ENTER
         ref['blur' + row + col] = false;
         this.setState({['editing' + row  + col] : false, ['val' + row  + col] : value});
         ref['td' + row  + col].focus();
         e.preventDefault();
         break;
-      case 27: // ESC
+      case 'Escape': // ESC
         ref['blur' + row + col] = false;
         this.setState({['editing' + row  + col] : false, ['val' + row  + col] : this.state['prevVal' + row + col]});
         ref['td' + row  + col].focus();
@@ -205,9 +217,9 @@ class CR extends Component
     
     if(!this.state['editing' + rowFocus  + colFocus])
     {
-      switch(e.which) 
+      switch(e.key) 
       {        
-        case 9:
+        case 'Tab':
           if(!e.shiftKey)
           {
             ref.txttanggal.focus();
@@ -219,10 +231,9 @@ class CR extends Component
               e.preventDefault();
           }
           break;
-        case 37: this.leftKeys(); break;
-        case 39: this.rightKeys(); break;
-        case 38: 
-            // Up Arrow
+        case 'ArrowLeft': this.leftKeys(); break;
+        case 'ArrowRight': this.rightKeys(); break;
+        case 'ArrowUp': 
             if (rowFocus-1 < 0)
               return;
               
@@ -232,8 +243,7 @@ class CR extends Component
             // set nextFocus
             this.setRowIndexColIndex((rowFocus-1), colFocus);
           break;
-        case 40: 
-            // Down Arrow
+        case 'ArrowDown': 
             if (rowFocus+1 >= this.maxData)
               return;
               
@@ -243,12 +253,10 @@ class CR extends Component
             // set nextFocus
             this.setRowIndexColIndex((rowFocus+1), colFocus);
           break;
-        case 46: 
-            // Delete
+        case 'Delete': 
             this.setState({['val' + rowFocus  + colFocus] : ''});
           break;
-        case 113: 
-            // F2
+        case 'F2': 
             this.setState({['editing' + rowFocus  + colFocus] : true});
           break;
         default:
@@ -262,7 +270,7 @@ class CR extends Component
               ['val' + rowFocus  + colFocus] : ''});
             ref['tbtxt' + rowFocus + colFocus].focus();
           }
-          else if(e.which != 9)
+          else if(e.key != 'Tab')
           {
               e.preventDefault();
           }
@@ -303,7 +311,11 @@ class CR extends Component
   
   handleKeyTerimaDari = e =>
   {
-    if(e.which == 9 && e.shiftKey)  // SHIFT + TAB
+    if(e.key === 'F12') 
+    {
+      this.openComSearch();
+      e.preventDefault();
+    }else if(e.which === 9 && e.shiftKey)  // SHIFT + TAB
     {
       ref.txtprogress.focus();
       e.preventDefault();
@@ -385,7 +397,7 @@ class CR extends Component
       }
       itemsRow.push(<TableRow key={'tr' + row}>{itemsCol}</TableRow>);
     }
-    
+    // style={{position:'fixed', left:`calc(250px-100%)`, right:'10'}}
     return (
       <div>
         <Helmet>
@@ -401,13 +413,14 @@ class CR extends Component
           
           <Grid container>
             <Grid item xs={12} sm={8}>
-              <TxtSearch tabIndex={1} key={1} width='170' marginLabel='17%' id='txtterimadari' label='Terima Dari' onKeyDown={this.handleKeyTerimaDari} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} />
+              <TxtSearch tabIndex={1} key={1} width='170' marginLabel='17%' id='txtterimadari' label='Terima Dari' onKeyDown={this.handleKeyTerimaDari} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} 
+                clickIcon={this.openComSearch}/>
               <TxtSearch tabIndex={2} key={2} width='170' marginLabel='17%' id='txtakunkas' label='Akun Kas [D]' setRef={this.setRef} placeholder=''  value={this.state['txtakunkas']} />
               <TxtInput tabIndex={3} key={3} width='200' marginLabel='17%' id='txturaian' label='Uraian' onKeyDown={this.handleKeyUraian} setRef={this.setRef} placeholder=''  value={this.state['txturaian']} />
             </Grid>
             <Grid item xs={12} sm={4} style={{paddingLeft:'0px'}}>
               <TxtInput tabIndex={++lastTabIndex} key={lastTabIndex} type='date' width='200' marginLabel='100px' id='txttanggal' label='Tanggal' onKeyDown={this.handleKeyTanggal} setRef={this.setRef} placeholder=''  value={this.state['txttanggal']} />
-              <TxtNoTransaksi  tabIndex={++lastTabIndex} key={lastTabIndex} width='140' marginLabel='100px' id='txtntoransaksi' label='No Transaksi' setRef={this.setRef} placeholder=''  value={this.state['txtntoransaksi']} />
+              <TxtNoTransaksi tabIndex={++lastTabIndex} key={lastTabIndex} width='140' marginLabel='100px' id='txtntoransaksi' label='No Transaksi' setRef={this.setRef} placeholder=''  value={this.state['txtntoransaksi']} />
               <Grid container>
                 <Grid item xs={12} sm={8}>
                   <TxtSearch tabIndex={++lastTabIndex} key={lastTabIndex} width='70' marginLabel='100px' id='txtuang' label='Uang' setRef={this.setRef} placeholder=''  value={this.state['txtuang']} />
@@ -419,7 +432,7 @@ class CR extends Component
               <TxtComboBox tabIndex={++lastTabIndex} key={lastTabIndex} width='200' marginLabel='100px' id='txtprogress' label='Progress' onKeyDown={this.handleKeyProgress} setRef={this.setRef} placeholder=''  value={this.state['txtprogress']} />
             </Grid>
           </Grid>
-          <RootRef rootRef={ref.tbData}>
+          <RootRef rootRef={ref.tb}>
             <Table key={9} id='table' className={classNames(classes.table, classes.stripped, classes.bordered, classes.hovertd)}
               onKeyDown={this.tableOnKeyDown} ref="tb" style={{margin:0}}>
               <TableHead>
@@ -441,6 +454,9 @@ class CR extends Component
           </RootRef>
           
         </PapperFix>
+        <Dialog fullWidth={true} maxWidth = {'md'} open={this.state.openDialog} onClose={this.closeComSearch} children="kosong"
+          PaperComponent={() => {return (<ComSearch />)}}/>
+
       </div>
     );
   }

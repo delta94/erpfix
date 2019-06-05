@@ -73,6 +73,7 @@ class RightSidebarLayout extends React.Component {
               <div className={!pageLoaded ? classes.hideApp : ''}>
                 {/* Application content will load here */}
                 { children }
+                <table style={{tableLayout:'fixed', visibility:'hidden'}}/>
               </div>
             </Fade>
           </section>

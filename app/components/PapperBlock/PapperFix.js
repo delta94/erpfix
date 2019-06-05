@@ -22,13 +22,9 @@ class PapperFix extends React.Component {
       icon
     } = this.props;
     return (
-      <div>
-        <Paper className={classNames(classes.root, noMargin && classes.noMargin, colorMode && classes.colorMode)} elevation={0}>
-          <section className={classNames(classes.content, whiteBg && classes.whiteBg, overflowX && classes.overflowX)}>
-            {children}
-          </section>
-        </Paper>
-      </div>
+      <section className={classNames(classes.content, whiteBg && classes.whiteBg, overflowX && classes.overflowX)}>
+        {children}
+      </section>
     );
   }
 }

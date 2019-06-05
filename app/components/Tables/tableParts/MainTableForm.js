@@ -150,6 +150,8 @@ class MainTableForm extends React.Component
         </Toolbar>
 
         <div className={classes.rootTable}  style={{marginTop: 0, border: 1}}>
+  
+
           <Table className={classNames(css.tableCrud, classes.table, classes.stripped)}>
             <TableHead><TableRow>{ getHead(anchor) }</TableRow></TableHead>
             <TableBody>{getItems(items)}</TableBody>

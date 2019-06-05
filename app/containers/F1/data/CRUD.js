@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Notification, PapperBlock } from 'dan-components';
-import { Pagination } from '../../../components';
-import Form from '../../../components/Tables/tableParts/Form';
-import FormFilter from '../../../components/Tables/tableParts/FormFilter';
-import MainTableForm from '../../../components/Tables/tableParts/MainTableForm';
-import FloatingPanel from '../../../components/Panel/FloatingPanel';
-import PanelFilterData from '../../../components/Panel/PanelFilterData';
+import { Pagination } from 'dan-components';
+import Form from 'dan-components/Tables/tableParts/Form';
+import FormFilter from 'dan-components/Tables/tableParts/FormFilter';
+import MainTableForm from 'dan-components/Tables/tableParts/MainTableForm';
+import FloatingPanel from 'dan-components/Panel/FloatingPanel';
+import PanelFilterData from 'dan-components/Panel/PanelFilterData';
 import { HotKeys } from "react-hotkeys";
 
 class CRUD extends React.Component 

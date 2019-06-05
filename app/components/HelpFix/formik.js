@@ -63,7 +63,7 @@ export const TxtComboBox = ({id,label,error,value,onChange,width,className,onKey
   );
 };
 
-export const TxtSearch = ({id,label,error,value,onChange,width,className,onKeyDown,autoFocus,setRef,marginLabel, ...props}) => {
+export const TxtSearch = ({id,label,error,value,onChange,width,className,onKeyDown,autoFocus,setRef,marginLabel,clickIcon, ...props}) => {
   const classes = classnames("input-group",{"animated shake error": !!error},className);
   return (
     <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
@@ -75,7 +75,7 @@ export const TxtSearch = ({id,label,error,value,onChange,width,className,onKeyDo
           type='text' value={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
         <InputFeedback error={error} />
       </div>
-      <IconButton title='Search' className={classes.btn} style={{padding:3}} >
+      <IconButton title='Search' className={classes.btn} style={{padding:3}} onClick={clickIcon}>
         <Icon className={classes.icon}>search</Icon>
       </IconButton>
     </div>
@@ -96,6 +96,35 @@ export const TxtNoTransaksi = ({id,label,error,value,onChange,width,className,on
       </div>
       <input type="checkbox" className="text-input" id={'cbx' + id} style={{padding:0, margin:0, width:'20px'}}/>
       <Label htmlFor={'cbx' + id} >Auto</Label>
+    </div>
+  );
+};
+
+export const Input = ({id,label,error,value,onChange,width,className,onKeyDown,autoFocus,setRef, ...props}) => {
+  const classes = classnames("input-group",{"animated shake error": !!error},className);
+  return (
+      <input style={{width: `${width}`}}
+          id={id}
+          className="text-input"
+          type='text' value={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
+  );
+};
+
+export const ComboBox = ({id,label,error,value,toolTip, onChange,width,className,onKeyDown,autoFocus,setRef,data, ...props}) => {
+  const classes = classnames("input-group",{"animated shake error": !!error},className);
+  const childData = [];
+  for(let i in data)
+  {
+    childData.push(<option key={data[i].value + '@' + data[i].label} value={data[i].value}>{data[i].label}</option>);
+  }
+  return (
+    <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
+      <select id={id} key={id} name={id} className="text-input"
+       style={{height: '35px', width: `${width}`, textAlign: 'center'}} 
+       onKeyDown={onKeyDown} ref={setRef || null} {...props}
+       title={toolTip}>
+        {childData}
+      </select>
     </div>
   );
 };
