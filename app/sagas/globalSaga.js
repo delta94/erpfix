@@ -9,6 +9,13 @@ export function* GET_DATA(action)
   yield put({ type: `${branch}/${FETCH_DATA_FORM}`, res, branch, primaryKey});
 }
 
+export function* GET_DATA_COMPSEARCH(action) 
+{
+  const { branch, pagging, source, primaryKey } = action;
+  const res = yield call(API.GET_DATA_SEARCH, {filter: pagging.filter, page: pagging.page, limit: pagging.limit, source});
+  yield put({ type: `${branch}/${FETCH_DATA_FORM}`, res, branch, primaryKey});
+}
+
 export function* REMOVE_ROW_FORM(action) 
 {
   const { branch, item, pagging, source, primaryKey } = action;
@@ -46,6 +53,9 @@ export function* INSERT_DATA(action)
 
 export function* takeSagaTrigger() 
 {
+  yield takeLatest(`compSearch/GET_DATA`, GET_DATA_COMPSEARCH);
+
+
   yield takeLatest(`crudTbFrmDemo/GET_DATA`, GET_DATA);
   yield takeLatest(`crudTbFrmDemo/SUBMIT_DATA`, INSERT_DATA);
   yield takeLatest(`crudTbFrmDemo/REMOVE_ROW_FORM`, REMOVE_ROW_FORM);

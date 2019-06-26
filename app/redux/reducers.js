@@ -20,7 +20,7 @@ import chat from './modules/chat';
 import email from './modules/email';
 import calendar from './modules/calendar';
 import taskboard from './modules/taskboard';
-import area_result from './modules/area';
+import compSearch from './modules/reducerSearch';
 
 /**
  * Branching reducers to use one reducer for many components
@@ -47,7 +47,7 @@ export default function createReducer(injectedReducers = {}) {
   const rootReducer = combineReducers({
     form,
     ui: uiReducer,
-    area_result,
+    compSearch,
     initval,
     login,
     socmed,

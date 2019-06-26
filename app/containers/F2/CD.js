@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
-import ComSearch from './ComSearch';
+import ComSearch from './CompSearch';
 
 
 class CD extends React.Component

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
-import brand from 'dan-api/dummy/brand';
+import brand from 'fix-api/dummy/brand';
 import { withStyles } from '@material-ui/core/styles';
-import { PapperFix } from 'dan-components';
+import { PapperFix } from 'fix-components';
 import "./CR_CSS.css";
 import { TbTextInput, TxtInput, TxtSearch, TxtNoTransaksi, TxtComboBox, TbLabel } from 'fix-help/formik';
 import Grid from '@material-ui/core/Grid';
@@ -12,10 +12,8 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import styles from 'dan-components/Tables/tableStyle-jss';
+import styles from 'fix-components/Tables/tableStyle-jss';
 import RootRef from '@material-ui/core/RootRef';
-import Dialog from '@material-ui/core/Dialog';
-import ComSearch from './ComSearch';
 
 let ref    = {};
 let colFocus = 0;
@@ -40,7 +38,6 @@ class CR extends Component
     ref.tb = React.createRef();
 
     this.state = {
-      openDialog: false
     };
 
     for (let r = 0;r<this.maxData; r++)
@@ -79,16 +76,6 @@ class CR extends Component
 
     this.setRowIndexColIndex(0, 0);
     ref.txtterimadari.focus();
-  }
-
-  openComSearch = () =>
-  {
-    this.setState({openDialog:true});
-  }
-
-  closeComSearch = () =>
-  {
-    this.setState({openDialog:false});
   }
 
   tdDblClick = (row, col) =>
@@ -311,11 +298,7 @@ class CR extends Component
   
   handleKeyTerimaDari = e =>
   {
-    if(e.key === 'F12') 
-    {
-      this.openComSearch();
-      e.preventDefault();
-    }else if(e.which === 9 && e.shiftKey)  // SHIFT + TAB
+    if(e.which === 9 && e.shiftKey)  // SHIFT + TAB
     {
       ref.txtprogress.focus();
       e.preventDefault();
@@ -348,6 +331,30 @@ class CR extends Component
     {
       ref.txtterimadari.focus();
       e.preventDefault();
+    }
+  }
+
+  SetVariable = param =>
+  {
+    const { succes, target, data } = param;
+    if(succes)
+    {
+      switch(target)
+      {
+        case 'txtterimadari':
+          this.setState({txtterimadari: data.get('kkode')});
+          break;
+        case 'txtakunkas':
+          this.setState({txtakunkas: data.get('kkode')});
+          break;
+        case 'txtuang':
+          this.setState({txtuang: data.get('kkode')});
+          break;
+      }
+    }
+    else
+    {
+
     }
   }
 
@@ -386,7 +393,7 @@ class CR extends Component
             <TableCell 
               id={'td' + row + col} 
               style={{padding:"0", margin: '0'}} 
-              tabIndex = {9}
+              tabIndex = {++lastTabIndex}
               width={width + "px"}
               onClick={() => this.tdClick(row, col)} 
               onDoubleClick={() => this.tdDblClick(row, col)} 
@@ -398,6 +405,7 @@ class CR extends Component
       itemsRow.push(<TableRow key={'tr' + row}>{itemsCol}</TableRow>);
     }
     // style={{position:'fixed', left:`calc(250px-100%)`, right:'10'}}
+    console.log('RENDER CR');
     return (
       <div>
         <Helmet>
@@ -413,9 +421,8 @@ class CR extends Component
           
           <Grid container>
             <Grid item xs={12} sm={8}>
-              <TxtSearch tabIndex={1} key={1} width='170' marginLabel='17%' id='txtterimadari' label='Terima Dari' onKeyDown={this.handleKeyTerimaDari} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} 
-                clickIcon={this.openComSearch}/>
-              <TxtSearch tabIndex={2} key={2} width='170' marginLabel='17%' id='txtakunkas' label='Akun Kas [D]' setRef={this.setRef} placeholder=''  value={this.state['txtakunkas']} />
+              <TxtSearch tabIndex={1} key={1} width='170' marginLabel='17%' id='txtterimadari' label='Terima Dari' SetVariable={this.SetVariable} onKeyDown={this.handleKeyTerimaDari} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} />
+              <TxtSearch tabIndex={2} key={2} width='170' marginLabel='17%' id='txtakunkas' label='Akun Kas [D]' SetVariable={this.SetVariable} setRef={this.setRef} placeholder=''  value={this.state['txtakunkas']} />
               <TxtInput tabIndex={3} key={3} width='200' marginLabel='17%' id='txturaian' label='Uraian' onKeyDown={this.handleKeyUraian} setRef={this.setRef} placeholder=''  value={this.state['txturaian']} />
             </Grid>
             <Grid item xs={12} sm={4} style={{paddingLeft:'0px'}}>
@@ -423,7 +430,7 @@ class CR extends Component
               <TxtNoTransaksi tabIndex={++lastTabIndex} key={lastTabIndex} width='140' marginLabel='100px' id='txtntoransaksi' label='No Transaksi' setRef={this.setRef} placeholder=''  value={this.state['txtntoransaksi']} />
               <Grid container>
                 <Grid item xs={12} sm={8}>
-                  <TxtSearch tabIndex={++lastTabIndex} key={lastTabIndex} width='70' marginLabel='100px' id='txtuang' label='Uang' setRef={this.setRef} placeholder=''  value={this.state['txtuang']} />
+                  <TxtSearch tabIndex={++lastTabIndex} key={lastTabIndex} width='70' marginLabel='100px' SetVariable={this.SetVariable} id='txtuang' label='Uang' setRef={this.setRef} placeholder=''  value={this.state['txtuang']} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <TxtInput tabIndex={++lastTabIndex} key={lastTabIndex} width='55' marginLabel='43px' id='txtkurs' label='Kurs' setRef={this.setRef} placeholder=''  value={this.state['txtkurs']} />
@@ -454,8 +461,6 @@ class CR extends Component
           </RootRef>
           
         </PapperFix>
-        <Dialog fullWidth={true} maxWidth = {'md'} open={this.state.openDialog} onClose={this.closeComSearch} children="kosong"
-          PaperComponent={() => {return (<ComSearch />)}}/>
 
       </div>
     );

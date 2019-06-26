@@ -28,7 +28,7 @@ class AdvFilter extends React.Component {
   }
 
   render() {
-    // console.log(`area_result ${JSON.stringify(this.props.area_result)}`);
+    // console.log(`area_result ${stringify(this.props.area_result)}`);
     // console.log(`dataTableArea ${JSON.stringify(this.props.dataTableArea)}`);
     // console.log(`dtData ${JSON.stringify(this.props.dtData)}`);
     // console.log(`dtCount ${JSON.stringify(this.props.dtCount)}`);

@@ -60,9 +60,9 @@ const fetchSelfApiAREA = params => {
     });
   }
 
-  const GET_DATA = params => {
+  const GET_DATA_SEARCH = params => {
     let param = {
-        "target"    : "showData",
+        "target"    : params.target,
         "pageNumber": params.page,
         "pageLimit" : params.limit,
         "filter"    : params.filter,
@@ -70,8 +70,8 @@ const fetchSelfApiAREA = params => {
         "groupBy"   : ""
       };
     
-    return new Promise((resolve, reject) => {
-      getData_axios(params.source, `?param=${encodeURIComponent(JSON.stringify(param))}`).then(res => 
+    return new Promise((resolve) => {
+      getData_axios(`search/${params.source}`, `?param=${encodeURIComponent(JSON.stringify(param))}`).then(res => 
       {
         resolve(res.data)
       },
@@ -80,6 +80,30 @@ const fetchSelfApiAREA = params => {
           resolve(err.response.data);
       });
   });
+}
+
+
+
+const GET_DATA = params => {
+  let param = {
+      "target"    : "showData",
+      "pageNumber": params.page,
+      "pageLimit" : params.limit,
+      "filter"    : params.filter,
+      "orderBy"   : "",
+      "groupBy"   : ""
+    };
+  
+  return new Promise((resolve, reject) => {
+    getData_axios(params.source, `?param=${encodeURIComponent(JSON.stringify(param))}`).then(res => 
+    {
+      resolve(res.data)
+    },
+    (err) => 
+    {
+        resolve(err.response.data);
+    });
+});
 }
 
 const REMOVE_DATA = params => {
@@ -144,6 +168,7 @@ export const API = {
     getData_axios,
     fetchSelfApiAREA,
     GET_DATA,
+    GET_DATA_SEARCH,
     REMOVE_DATA,
     INSERT_DATA,
     UPDATE_DATA

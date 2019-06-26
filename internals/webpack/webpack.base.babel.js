@@ -181,6 +181,13 @@ module.exports = options => ({
     mainFields: ['browser', 'jsnext:main', 'main'],
     alias: {
       'fix-help': path.resolve(__dirname, '../../app/components/HelpFix'),
+      'fix': path.resolve(__dirname, '../../app/'),
+      'fix-components': path.resolve(__dirname, '../../app/components/'),
+      'fix-actions': path.resolve(__dirname, '../../app/actions/'),
+      'fix-styles': path.resolve(__dirname, '../../app/styles/components/'),
+      'fix-api': path.resolve(__dirname, '../../app/api/'),
+      'fix-images': path.resolve(__dirname, '../../public/images/'),
+      'fix-vendor': path.resolve(__dirname, '../../node_modules/'),
       'dan-components': path.resolve(__dirname, '../../app/components/'),
       'dan-actions': path.resolve(__dirname, '../../app/actions/'),
       'dan-styles': path.resolve(__dirname, '../../app/styles/components/'),

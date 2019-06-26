@@ -4,6 +4,9 @@ import classnames from "classnames";
 import IconButton from '@material-ui/core/IconButton';
 import Icon from '@material-ui/core/Icon';
 import * as YupImport from "yup";
+import Dialog from '@material-ui/core/Dialog';
+import CompSearch from 'fix/containers/F2/CompSearch';
+import { connect } from 'react-redux';
 
 const InputFeedback = ({ error }) => error ? <div className="input-feedback">{error}</div> : null;
 
@@ -63,24 +66,95 @@ export const TxtComboBox = ({id,label,error,value,onChange,width,className,onKey
   );
 };
 
-export const TxtSearch = ({id,label,error,value,onChange,width,className,onKeyDown,autoFocus,setRef,marginLabel,clickIcon, ...props}) => {
-  const classes = classnames("input-group",{"animated shake error": !!error},className);
-  return (
-    <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
-      <Label htmlFor={id} error={error} style={{width: marginLabel || '20%'}}>{label}</Label>
-      <div>
-      <input style={{width: `${width}px`}} 
-          id={id}
-          className="text-input"
-          type='text' value={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
-        <InputFeedback error={error} />
+export class TxtSearch extends React.Component 
+{
+  ref = {};
+  state = {openDialog: false}
+
+  constructor(props, context) {
+    super(props, context);
+
+    (props.id === 'txtterimadari') && console.log(props.id + ' comp constructor');
+  }
+
+  handleOpenDialog = () =>
+  {
+    this.ref.input.focus();
+    this.setState({openDialog:true});
+  }
+
+  handleCloseDialog = () =>
+  {
+    // this.props.resetData();
+    this.ref.input.focus();
+    this.setState({openDialog:false});
+  }
+  
+  handleKeyInput = e =>
+  {
+    if(e.key === 'F12') 
+    {
+      this.handleOpenDialog();
+      e.preventDefault();
+    }
+    else
+    {
+      if(typeof this.props.onKeyDown === 'function')
+      {
+        this.props.onKeyDown(e);
+      }
+    }
+  }
+
+  setRef = (e) =>
+  {
+    this.ref.input = e;
+
+    if(typeof this.props.setRef === 'function')
+    {
+      this.props.setRef(e);
+    }
+  }
+
+
+  render() 
+  {
+    const {id,label,error,value,onChange,width,className,marginLabel, tabIndex, props, SetVariable } = this.props;
+    (this.props.id === 'txtterimadari') && console.log(id + ' render comp');
+    const classes = classnames("input-group",{"animated shake error": !!error},className);
+    return (
+      <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
+        <Label htmlFor={id} error={error} style={{width: marginLabel || '20%'}}>{label}</Label>
+        <div>
+        <input style={{width: `${width}px`}} 
+            id={id} tabIndex={tabIndex}
+            className="text-input"
+            type='text' value={value} ref={this.setRef} onChange={onChange} 
+            onKeyDown={this.handleKeyInput} 
+            autoFocus={true} {...props}/>
+          <InputFeedback error={error} />
+        </div>
+        <IconButton title='Search' className={classes.btn} style={{padding:3}} onClick={this.handleOpenDialog} tabIndex={-1}>
+          <Icon className={classes.icon}>search</Icon>
+        </IconButton>
+        <Dialog fullWidth={true} maxWidth = {'md'} open={this.state.openDialog} onExiting={() => this.ref.input.focus()}
+          onExited={() => this.ref.input.focus()}
+          onClose={this.handleCloseDialog} children="kosong" 
+          PaperComponent={() => {return (<CompSearch SetVariable={SetVariable} id={id} onClose={this.handleCloseDialog}/>)}}/>
       </div>
-      <IconButton title='Search' className={classes.btn} style={{padding:3}} onClick={clickIcon}>
-        <Icon className={classes.icon}>search</Icon>
-      </IconButton>
-    </div>
-  );
-};
+      );
+  }
+}
+
+// const branch   = 'compSearch';
+
+// const mapStateToProps = state => ({});
+
+// const mapDispatchToProps = dispatch => ({
+//   resetData: () => dispatch({ type: `${branch}/RESET_DATA_FORM`, branch}),
+// });
+
+// export const TxtSearch = TxtSearchComp;
 
 export const TxtNoTransaksi = ({id,label,error,value,onChange,width,className,onKeyDown,autoFocus,setRef,marginLabel, ...props}) => {
   const classes = classnames("input-group",{"animated shake error": !!error},className);
@@ -94,14 +168,13 @@ export const TxtNoTransaksi = ({id,label,error,value,onChange,width,className,on
           type='text' value={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
         <InputFeedback error={error} />
       </div>
-      <input type="checkbox" className="text-input" id={'cbx' + id} style={{padding:0, margin:0, width:'20px'}}/>
+      <input type="checkbox" className="text-input" id={'cbx' + id} style={{padding:0, margin:0, width:'20px'}}  tabIndex={-1}/>
       <Label htmlFor={'cbx' + id} >Auto</Label>
     </div>
   );
 };
 
 export const Input = ({id,label,error,value,onChange,width,className,onKeyDown,autoFocus,setRef, ...props}) => {
-  const classes = classnames("input-group",{"animated shake error": !!error},className);
   return (
       <input style={{width: `${width}`}}
           id={id}
