@@ -55,7 +55,7 @@ class AddBoardForm extends React.Component {
                 validate={required}
                 required
                 ref={this.saveRef}
-                withRef
+                forwardRef
                 className={classes.field}
               />
             </div>
@@ -66,7 +66,7 @@ class AddBoardForm extends React.Component {
                 placeholder="Label"
                 label="Label"
                 ref={this.saveRef}
-                withRef
+                forwardRef
                 className={classes.field}
               />
             </div>

@@ -3,8 +3,7 @@
  */
 import { reducer as form } from 'redux-form/immutable';
 import { combineReducers } from 'redux-immutable';
-import { connectRouter } from 'connected-react-router/immutable';
-import history from 'utils/history';
+import { connectRouter } from "connected-react-router";
 
 import languageProviderReducer from 'containers/LanguageProvider/reducer';
 import uiReducer from './modules/ui';
@@ -43,8 +42,9 @@ function branchReducer(reducerFunction, reducerName) {
 /**
  * Creates the main reducer with the dynamically injected ones
  */
-export default function createReducer(injectedReducers = {}) {
+export default function createReducer(injectedReducers = {}, history) {
   const rootReducer = combineReducers({
+    router: connectRouter(history),
     form,
     ui: uiReducer,
     compSearch,

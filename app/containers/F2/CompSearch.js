@@ -17,7 +17,7 @@ import TableRow from '@material-ui/core/TableRow';
 import RootRef from '@material-ui/core/RootRef';
 import styles from 'fix-components/Tables/tableStyle-jss';
 import Pagination from 'fix-components/Pagination/Pagination';
-import { connect } from 'react-redux';
+import Dialog from '@material-ui/core/Dialog';
 import { API } from '../../service';
 import { fromJS, List } from 'immutable';
 
@@ -25,40 +25,56 @@ let ref    = {};
 let rowIndex = 0;
 let rowOver = 0;
 let isOver = false;
+let init = false;
 
 class CompSearch extends React.Component
 {
   maxData = 0;
   focus = {};
 
-
-  constructor(props, context) {
+  constructor(props, context) 
+  {
     super(props, context);
 
     ref.tb = React.createRef();
     this.state = {
-      id: props.id,
+      target: props.target,
       txtsearch: props.txtsearch, dataTable: List([]), title: '',
       header: '', notifMsg: '',  count:0, page:1, limit:4, last_page:1
     }
   }
-
-  btnSearchClick = (value) =>
-  {
-    const {header} = this.state;
-    const val = (value === undefined) ? ref.txtsearch.value : value;
-    let filter = '';
-    for(let i in header)
-    {
-      if(filter !== '') filter += ' OR ';
-      filter += `${header[i][0]} LIKE '%${val}%'`;
-    } 
-    this.showDataPage(1, filter);
-  }
   
+  setRef = e => {if(e) ref[e.id] = e;};
+  
+  componentWillReceiveProps = (nextProps) =>
+  {
+    // OPENING
+    const {source, current} = nextProps;
+    if(!this.props.open && nextProps.open)
+    {
+      init = true;
+      API.GETDATA_COMPSEARCH({target: 'txtsearch', filter:'', filterSearch: (current)?current:'', page:1, limit: 10, source, operator: 'contains', column: 'All'}).then(this['API_Result']);  
+    } 
+  }
+
+  shouldComponentUpdate = (nextProps) =>
+  {
+    // CLOSING
+    if(this.props.open && !nextProps.open)
+    {
+      this.setState({title: '', header: [], dataTable: fromJS([]), count: 1, page: 1, limit: 1, last_page: 1, txtsearch: ''});
+      return false;
+    }
+
+    return true;
+  }
 
   componentDidUpdate = () =>
-  {
+  {    
+    if(ref.tb.current === null || !this.props.open)
+      return;
+
+      
     ref.tbData = ref.tb.current;
     ref.tr = ref.tbData.children[1].children;
     
@@ -70,19 +86,21 @@ class CompSearch extends React.Component
         {
           ref[`tr${i}`] = ref.tr[i]; 
           ref[`tr${i}`].className = (i%2 == 0) ? this.props.classes.tdWhite : this.props.classes.tdReset;
-          
           ref[`tr${i}`].addEventListener("mouseover", () => this.tableOnMouseOver(i));
           ref[`tr${i}`].addEventListener("mouseleave", this.tableOnMouseLeave);
           ref[`tr${i}`].addEventListener("click", () => this.tdClick(i));
-          ref[`tr${i}`].addEventListener("dblclick", () =>
-            { 
-              this.props.SetVariable({succes: true, target: this.props.id, data: this.state.dataTable.get(i)});
-              this.props.onClose();
-            });
+          if(i < this.maxData)
+          {
+            ref[`tr${i}`].addEventListener("dblclick", () =>
+              { 
+                this.props.SetVariable({succes: true, target: this.props.target, data: this.state.dataTable.get(i)});
+                this.props.onClose();
+              });
+          }
         }
       }
   
-      ref.txtcolumn.onkeydown = this.handleKeyFirstTabIndex;
+      ref.cmbcolumn.onkeydown = this.handleKeyFirstTabIndex;
       ref.tbData.onkeydown = this.tableOnKeyDown;
   
       this.focus.arrRef = [];
@@ -102,11 +120,11 @@ class CompSearch extends React.Component
       this.focus.minIndex = this.focus.arrRef[0].index;
       this.focus.maxIndex = this.focus.arrRef[this.focus.max-1].index;
   
-      this.setRowIndex(0);
+      if(this.maxData > 0)
+        this.setRowIndex(0);
     }
     
     this.setFocus(ref.txtsearch);
-    // ref.txtsearch.focus();
   }
 
   setFocus = (id) =>
@@ -125,7 +143,7 @@ class CompSearch extends React.Component
     }
     else
     {  
-      for ( let i in this.focus.arrRef)
+      for (let i in this.focus.arrRef)
       {
         if(i == this.focus.max-1)
         {
@@ -165,12 +183,6 @@ class CompSearch extends React.Component
       }
     }
   }
-  
-  setRef = e => 
-  {
-    if(e)
-      ref[e.id] = e;
-  };
 
   resetCurrentPrevFocus = (row) => 
   {
@@ -193,6 +205,9 @@ class CompSearch extends React.Component
 
   tdClick = row =>
   {
+    if(row >= this.maxData)
+      return;
+
     // reset current prev focus
     if(rowIndex != row && row < this.maxData)
       this.resetCurrentPrevFocus(rowIndex);
@@ -209,17 +224,21 @@ class CompSearch extends React.Component
 
   tableOnMouseOver = (row) =>
   {
-    const { classes, theme } = this.props;
-    isOver = true;
-    rowOver = parseInt(row);
-
-    if(parseInt(rowOver) !== parseInt(rowIndex))
-      ref[`tr${row}`].className = classes.trHover;
+    const { classes } = this.props;
+    if(row < this.maxData)
+    {
+      isOver = true;
+      rowOver = parseInt(row);
+  
+      if(parseInt(rowOver) !== parseInt(rowIndex))
+        ref[`tr${row}`].className = classes.trHover;
+    }
   }
 
   tableOnMouseLeave = () =>
   {
-    isOver = false;
+    if(rowOver < this.maxData)
+      isOver = false;
     if(parseInt(rowOver) !== parseInt(rowIndex))
       this.resetCurrentPrevFocus(rowOver);
   }
@@ -233,21 +252,30 @@ class CompSearch extends React.Component
     }
   }
 
+  handleClose = () =>
+  {
+    this.props.SetVariable({succes: false, target: this.props.target, data: []});
+    this.props.onClose();
+  }
+
   searchKeyDown = (e) =>
   {
     switch(e.key) 
     {       
       case 'ArrowDown': 
-        this.nextFocus();
-        this.setRowIndex(rowIndex);
-        e.preventDefault();
+        if(rowIndex < this.maxData)
+        {
+          this.nextFocus();
+          this.setRowIndex(rowIndex);
+          e.preventDefault();
+        }
         break;
       case 'Enter': 
-        this.btnSearchClick();
+        this.showDataPage(1);
         e.preventDefault();
         break;
       case 'Escape': 
-        this.props.onClose();
+        this.handleClose;
         break;
       case 'PageUp': 
         if(this.state.page > 1)
@@ -260,6 +288,12 @@ class CompSearch extends React.Component
         {
           this.showDataPage(parseInt(this.state.page)+1)
         }
+        break;
+      case 'Home': 
+        this.showDataPage(1)
+        break;
+      case 'End': 
+        this.showDataPage(this.state.last_page)
         break;
     }
   }
@@ -275,16 +309,16 @@ class CompSearch extends React.Component
     switch(e.key) 
     {        
       case 'Tab':
-        if(!e.shiftKey)
-        {
-          this.nextFocus();
-          e.preventDefault();
-        }
-        else if(e.shiftKey)
-        {
-          this.prevFocus();
-          e.preventDefault();
-        }
+          if(!e.shiftKey)
+          {
+            this.nextFocus();
+            e.preventDefault();
+          }
+          else if(e.shiftKey)
+          {
+            this.prevFocus();
+            e.preventDefault();
+          }
         break;
       case 'ArrowUp': 
           if (rowIndex-1 < 0)
@@ -300,21 +334,23 @@ class CompSearch extends React.Component
           this.setRowIndex((rowIndex-1));
         break;
       case 'ArrowDown': 
-          if (rowIndex+1 >= this.maxData)
-            return;
-            
-          // reset current prev Focus
-          this.resetCurrentPrevFocus(rowIndex);
+          if(rowIndex < this.maxData)
+          {
+            if (rowIndex+1 >= this.maxData)
+              return;
+              
+            // reset current prev Focus
+            this.resetCurrentPrevFocus(rowIndex);
 
-          // set nextFocus
-          this.setRowIndex((rowIndex+1));
+            // set nextFocus
+            this.setRowIndex((rowIndex+1));
+          }
         break;
       case 'Enter': 
-          this.props.SetVariable({succes: true, target: this.props.id, data: this.state.dataTable.get(rowIndex)});
-          this.props.onClose();
+          this.handleClickChoose();
         break;
       case 'Escape': 
-          this.props.onClose();
+          this.handleClose();
         break;
       case 'PageUp': 
         if(this.state.page > 1)
@@ -334,17 +370,12 @@ class CompSearch extends React.Component
     
   };
   
-  showDataPage = (page, filter2) => 
+  showDataPage = (page) => 
   {
-    const { header } = this.state;
-    const val = ref.txtsearch.value
-    let filter = '';
-    for(let i in header)
-    {
-      if(filter !== '') filter += ' OR ';
-      filter += `${header[i][0]} LIKE '%${val}%'`;
-    } 
-    API.GET_DATA_SEARCH({target: 'txtsearch', filter, page, limit: 10, source}).then(this['API_Result']);    
+    const { source } = this.props;
+    let column = ref.cmbcolumn[ref.cmbcolumn.selectedIndex].value;
+    let operator = ref.cmboperator[ref.cmboperator.selectedIndex].value;
+    API.GETDATA_COMPSEARCH({target:'txtsearch', filter:'', filterSearch: ref.txtsearch.value, page, limit: 10, source, operator, column}).then(this['API_Result']);    
   }
 
   API_Result = (param) =>
@@ -360,15 +391,32 @@ class CompSearch extends React.Component
           dataTable.data.map((val, i) => {
             dataTable.data[i]['no'] = (i+1+no);
           });
-          this.setState({
-            title: data.title, 
-            header: data.header, 
-            dataTable: fromJS(dataTable.data),
-            count: dataTable.total,
-            page: dataTable.current_page,
-            limit: dataTable.per_page,
-            last_page: (dataTable.last_page==0) ? 1 : dataTable.last_page,
-          });
+
+          if(init)
+          {
+            this.setState({
+              title: data.title || '', 
+              header: data.header || [], 
+              dataTable: fromJS(dataTable.data)  || fromJS([]),
+              count: dataTable.total || 1,
+              page: dataTable.current_page || 1,
+              limit: dataTable.per_page || 1,
+              last_page: (dataTable.last_page==0) ? 1 : dataTable.last_page,
+              txtsearch: this.props.current || ''
+            });
+          }
+          else
+          {
+            this.setState({
+              title: data.title, 
+              header: data.header, 
+              dataTable: fromJS(dataTable.data),
+              count: dataTable.total,
+              page: dataTable.current_page,
+              limit: dataTable.per_page,
+              last_page: (dataTable.last_page==0) ? 1 : dataTable.last_page,
+            });
+          }
           break;
       }
     }
@@ -386,47 +434,49 @@ class CompSearch extends React.Component
     this.setState({[id] : value});
   }
 
+  handleClickChoose = () =>
+  {
+    this.props.SetVariable({succes: true, target: this.props.target, data: this.state.dataTable.get(rowIndex)});
+    this.props.onClose();
+  }
+
   render()
   {
     const { classes } = this.props;
-    const { page, last_page, txtsearch } = this.state;
-    const { title, header, dataTable } = this.state;
-    const childDataColumn = [<option key={value + '@' + 'All'} value={value}>All</option>]; 
+    const { title, header, dataTable, page, last_page } = this.state;
+    const childDataColumn = [<option key={'All'} value='All'>All</option>]; 
     let label, value;
     for(let i in header)
     {
       value = header[i][0];
       label = header[i][1];
-      childDataColumn.push(<option key={value + '@' + label} value={value}>{label}</option>);
+      childDataColumn.push(<option key={value} value={value}>{label}</option>);
     } 
 
-    const arrOperator = 
-    [
-      {label: 'contains', value: ''},
-      {label: '=', value: ''},
-      {label: '!=', value: ''},
-      {label: '<', value: ''},
-      {label: '<=', value: ''},
-      {label: '>', value: ''},
-      {label: '>=', value: ''},
-      {label: 'begin with', value: ''},
-      {label: 'end with', value: ''},
-    ];
+    const arrOperator = ['contains', '=', '!=', '<', '<=', '>', '>=', 'begin with', 'end with'];
     const childDataOperator = [];
     for(let c in arrOperator)
     {
-      value = arrOperator[c].value;
-      label = arrOperator[c].label;
-      childDataOperator.push(<option key={label + '@' + c} value={value}>{label}</option>);
+      childDataOperator.push(<option key={arrOperator[c] + c} value={arrOperator[c]}>{arrOperator[c]}</option>);
     }
 
     const headerCell = [<TableCell key={'hcellno00'} align='center'>No</TableCell>];
     const content = [];
 
     // Header
+    let alignCase, alignOpsion;
     for( let i in header)
     {
-      headerCell.push(<TableCell key={'hcell' + i} align={header[i][3]}>{header[i][1]}</TableCell>);
+      alignOpsion = parseInt((header[i][3]) ? 0 : header[i][3]);
+      switch(alignOpsion)
+      {
+        case 0: alignCase = 'left';break;
+        case 1: alignCase = 'center';break;
+        case 2: alignCase = 'right';break;
+        default: alignCase = 'left';
+      }
+
+      headerCell.push(<TableCell key={'hcell' + i} align={alignCase}>{header[i][1]}</TableCell>);
     }
 
     // Content
@@ -437,35 +487,56 @@ class CompSearch extends React.Component
 
       for( let c in header)
       {
+        alignOpsion = parseInt((header[c][3]) ? 0 : header[c][3]);
+        switch(alignOpsion)
+        {
+          case 0: alignCase = 'left';break;
+          case 1: alignCase = 'center';break;
+          case 2: alignCase = 'right';break;
+          default: alignCase = 'left';
+        }
         width = header[c][2];
         if(width === -1)
-          cell.push(<TableCell key={'cell' + (index+c)} align={header[c][3]}>{item.get(header[c][0])}</TableCell>);
+          cell.push(<TableCell key={'cell' + (index+c)} align={alignCase}>{item.get(header[c][0])}</TableCell>);
         else
-          cell.push(<TableCell key={'cell' + (index+c)} align={header[c][3]} width={header[c][2]}>{item.get(header[c][0])}</TableCell>);
+          cell.push(<TableCell key={'cell' + (index+c)} align={alignCase} width={header[c][2]}>{item.get(header[c][0])}</TableCell>);
       }
 
       content.push(<TableRow key={'row' + index}  disabled={true}>{cell}</TableRow>);
     })
 
-    this.maxData = content.length; 
+    for(let i = content.length ;i<10; i++)
+    {
+      let cell = [<TableCell key={'cellno' + i} width='50' align='center' height='10'/>];
+      for( let c in header)
+      {
+        width = header[c][2];
+        if(width === -1)
+          cell.push(<TableCell key={'cell' + (i+c)} />);
+        else
+          cell.push(<TableCell key={'cell' + (i+c)} width={header[c][2]}/>);
+      }
+      content.push(<TableRow key={'row' + i}  disabled={true}>{cell}</TableRow>);
+    }
+
+    this.maxData = dataTable.size; 
 
     return (
-      <Draggable cancel={'[class*="MuiDialogContent-root"]'}>
-        <Paper>
+      <Dialog fullWidth={true} maxWidth = {'md'} open={this.props.open} onClose={this.handleClose} children="kosong" PaperComponent={DialogPaper}>
           <DialogTitle id="draggable-dialog-title" style={{margin:0, padding:'10px 0 5px 20px', cursor: 'move'}}>
             Cari {title}
           </DialogTitle>
           <DialogContent style={{margin: 0, padding: '0 10px 10px 10px'}}>
             <div style={{display: 'flex', marginBottom:'30px'}}>
               <div style={{height: '20px', width: '120px'}}>
-                <select id='txtcolumn' key='txtcolumn' name='txtcolumn' className="text-input" tabIndex={81} key={81}
+                <select id='cmbcolumn' key='cmbcolumn' name='cmbcolumn' className="text-input" tabIndex={81} key={81}
                   style={{height: '35px', width: `100%`, textAlign: 'center'}} 
                   ref={this.setRef} title='Column'>
                   {childDataColumn}
                 </select>
               </div>
               <div style={{height: '20px', marginLeft: '10px',width: '120px'}}>
-                <select id='txtoperator' key='txtoperator' name='txtoperator' className="text-input" tabIndex={82} key={82}
+                <select id='cmboperator' key='cmboperator' name='cmboperator' className="text-input" tabIndex={82} key={82}
                   style={{height: '35px', width: `100%`, textAlign: 'center'}} 
                   ref={this.setRef} title='Operator'>
                   {childDataOperator}
@@ -477,7 +548,7 @@ class CompSearch extends React.Component
                   onKeyDown={this.searchKeyDown}/>
               </div>
               <div style={{height: '20px', width: '50px'}}>
-                <IconButton id="btnsearch" title='Search' className={classes.btn} onClick={this.btnSearchClick}>
+                <IconButton id="btnsearch" title='Search' className={classes.btn} onClick={() => this.showDataPage(1)}>
                   <Icon className={classes.icon}>search</Icon>
                 </IconButton>
               </div>
@@ -491,50 +562,27 @@ class CompSearch extends React.Component
               </Table>
             </RootRef>
           </DialogContent>
-          <div style={{float: 'left', marginTop: '-20px'}}>
+          
+          <div style={{marginTop: '-20px', width: '75%'}}>
             <Pagination curpage={page} totpages={last_page} boundaryPagesRange={1} siblingPagesRange={1} hideEllipsis={false} onChange={this.showDataPage}/> 
           </div>
-          <DialogActions style={{margin: 0, padding: 0, border: '10px'}}>
-            <Button onClick={this.focusTable} color="primary">
+          <DialogActions style={{margin: 0, padding: 0, marginTop: '-35px'}}>
+            {/* <Button onClick={this.focusTable} color="primary">
               Add New
-            </Button>
-            <Button onClick={this.handleClose} color="primary">
+            </Button> */}
+            <Button onClick={this.handleClickChoose} color="primary">
               Choose
             </Button>
-            <Button onClick={this.props.onClose} color="primary">
+            <Button onClick={this.handleClose} color="primary">
               Cancel
             </Button>
           </DialogActions>
-        </Paper>
-      </Draggable>
+        </Dialog>
     );
   }
 }
 
-const branch   = 'compSearch';
-let primaryKey = '';
-let source     = 'contact';
-
-const mapStateToProps = state => ({
-  txtsearch: state.getIn([branch, 'txtsearch']),
-  cmbcolumn: state.getIn([branch, 'cmbcolumn']),
-  cmboperator: state.getIn([branch, 'cmboperator']),
-  dataTable: state.getIn([branch, 'dataTable']),
-  title: state.getIn([branch, 'title']),
-  header: state.getIn([branch, 'header']),
-  page: state.getIn([branch, 'page']),
-  last_page: state.getIn([branch, 'last_page']),
-});
-
-const mapDispatchToProps = dispatch => ({
-  fetchData: (pagging, txtsearch, cmbcolumn, cmbopeartor) => dispatch({ type: `${branch}/GET_DATA`, branch, pagging, source, primaryKey, txtsearch, cmbcolumn, cmbopeartor}),
-  resetData: () => dispatch({ type: `${branch}/RESET_DATA_FORM`, branch}),
-});
-
 export default withStyles(styles)(CompSearch);
-// const TxtSearch = withStyles(styles)(CompSearch);
-// const TxtSearch = connect(mapStateToProps, mapDispatchToProps)(CompSearch);
-// export default connect(mapStateToProps, mapDispatchToProps)(TxtSearch);
 
 class CompInput extends React.Component 
 {
@@ -542,6 +590,15 @@ class CompInput extends React.Component
   {
     super(props, context);
     this.state = {val: props.val, blur:true}
+  }
+
+  componentWillReceiveProps = (nextProps) =>
+  {
+    if(init)
+    {
+      init = false;
+      this.setState({val:nextProps.val});
+    }
   }
 
   render() 
@@ -560,4 +617,13 @@ class CompInput extends React.Component
         label='Search' style={{width: `100%`}} id={id} className="text-input" autoFocus={true} placeholder='Filter in here'/>
       );
   }
+}
+
+const DialogPaper = (props) => 
+{
+  return (
+    <Draggable cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
 }

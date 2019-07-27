@@ -25,9 +25,9 @@ class Dashboard extends React.Component {
 
     // Set expanded sidebar menu
     const currentPath = history.location.pathname;
-    initialOpen(currentPath);
+    // initialOpen(currentPath);
     // Play page transition
-    loadTransition(true);
+    // loadTransition(true);
 
     // Execute all arguments when page changes
     this.unlisten = history.listen(() => {
@@ -211,7 +211,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  toggleDrawer: () => dispatch(toggleAction),
+  toggleDrawer: (isLoaded) => dispatch(toggleAction, isLoaded),
   initialOpen: bindActionCreators(openAction, dispatch),
   loadTransition: bindActionCreators(playTransitionAction, dispatch),
 });

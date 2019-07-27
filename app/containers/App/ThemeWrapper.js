@@ -57,11 +57,11 @@ class ThemeWrapper extends React.Component {
   }
 
   onProgressShow = () => {
-    this.setState({ pageLoaded: true });
+    // this.setState({ pageLoaded: true });
   }
 
   onProgressHide = () => {
-    this.setState({ pageLoaded: false });
+    // this.setState({ pageLoaded: false });
   }
 
   playProgress = () => {

@@ -82,6 +82,31 @@ const fetchSelfApiAREA = params => {
   });
 }
 
+const GETDATA_COMPSEARCH = params => {
+  let param = {
+      "operator"  : params.operator,
+      "column"    : params.column,
+      "target"    : params.target,
+      "pageNumber": params.page,
+      "pageLimit" : params.limit,
+      "filter"    : params.filter,
+      "filterSearch": params.filterSearch,
+      "orderBy"   : "",
+      "groupBy"   : ""
+    };
+  
+  return new Promise((resolve) => {
+    getData_axios(`search/${params.source}`, `?param=${encodeURIComponent(JSON.stringify(param))}`).then(res => 
+    {
+      resolve(res.data)
+    },
+    (err) => 
+    {
+        resolve(err.response.data);
+    });
+});
+}
+
 
 
 const GET_DATA = params => {
@@ -169,6 +194,7 @@ export const API = {
     fetchSelfApiAREA,
     GET_DATA,
     GET_DATA_SEARCH,
+    GETDATA_COMPSEARCH,
     REMOVE_DATA,
     INSERT_DATA,
     UPDATE_DATA

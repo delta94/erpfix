@@ -22,7 +22,7 @@
   code {
     background: #eee;
     padding: .1rem;
-    font-family: 'Menlo';
+    /* font-family: 'Menlo'; */
     font-size: 13px;
     color: #ff00aa;
   }
@@ -45,13 +45,13 @@
   }
   
   .text-input:focus {
-      border-color: #007eff;
+    border-color: #007eff;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px rgba(0, 126, 255, 0.1);
     outline: none;
   }
   
   .tb-text-input:focus {
-      border-color: #007eff;
+    border-color: #007eff;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px rgba(0, 126, 255, 0.1);
     outline: none;
   }

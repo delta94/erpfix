@@ -104,7 +104,7 @@ class AddEventForm extends React.Component {
                 validate={required}
                 required
                 ref={this.saveRef}
-                withRef
+                forwardRef
                 className={classes.field}
               />
             </div>

@@ -118,7 +118,7 @@ class CrudTbFormDemo extends Component {
                 validate={required}
                 required
                 ref={this.saveRef}
-                withRef
+                forwardRef
                 className={classes.field}
               />
             </div>

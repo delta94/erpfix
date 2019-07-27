@@ -181,13 +181,13 @@ class CrudTbFormDemo extends Component
           <CrudTableForm classes={classes} openFormFilter={openFormFilter} closeFormFilter={closeFormFilter} submitFilter={submitFilter} initValuesFilter={initValuesFilter}
           page={page} limit={limit} dataTable={dataTable} openForm={openForm} anchor={anchorTable} title="Nama Tabel" fetchData={fetchData} addNew={addNew} addNewFilter={addNewFilter} editingId={editingId} closeForm={closeForm} submit={submit} removeRow={removeRow} editRow={editRow} branch={branch} initValues={initValues} >
             <div>
-              <div><Field name="akode" component={TextField} placeholder="Kode" label="Kode" validate={required} required ref={this.saveRef} withRef className={classes.field} /></div>
+              <div><Field name="akode" component={TextField} placeholder="Kode" label="Kode" validate={required} required ref={this.saveRef} forwardRef className={classes.field} /></div>
               <div><Field name="anama" component={TextField} placeholder="Nama" label="Nama" required validate={[required]} className={classes.field} /></div>
               <div className={classes.field}><Field name="acatatan" className={classes.field} component={TextField} placeholder="Catatan" label="Catatan" multiline={trueBool} rows={4} /></div>
               <div><Field name="aaktif" component={TextField} placeholder="Aktif" label="Aktif" required validate={[required]} className={classes.field} /></div>
             </div>
             <div>
-              <div><Field name="kode" component={TextField} placeholder="Kode" label="Kode" ref={this.saveRef} withRef className={classes.field} style={{width: 200, margin: 0}} /></div>
+              <div><Field name="kode" component={TextField} placeholder="Kode" label="Kode" ref={this.saveRef} forwardRef className={classes.field} style={{width: 200, margin: 0}} /></div>
               <div><Field name="nama" component={TextField} placeholder="Nama" label="Nama" className={classes.field} style={{width: 200, margin: 0}} /></div>
               <div><Field name="catatan" component={TextField} placeholder="Catatan" label="Catatan" className={classes.field} style={{width: 250, margin: 0}} /></div>
             </div>

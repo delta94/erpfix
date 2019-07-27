@@ -72,18 +72,18 @@ class LeftSidebarLayout extends React.Component {
               </div>
             )}
             { !pageLoaded && (<img src="/images/spinner.gif" alt="spinner" className={classes.circularProgress} />) }
-            <Fade
+            {/* <Fade
               in={pageLoaded}
               mountOnEnter
               unmountOnExit
               {...(pageLoaded ? { timeout: 700 } : {})}
-            >
+            > */}
               <div className={!pageLoaded ? classes.hideApp : ''} >
                 {/* Application content will load here */}
                 { children }
                 <table style={{tableLayout:'fixed', visibility:'hidden'}}/>
               </div>
-            </Fade>
+            {/* </Fade> */}
           </section>
         </main>
       </Fragment>

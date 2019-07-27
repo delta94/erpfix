@@ -3,325 +3,210 @@ import { Helmet } from 'react-helmet';
 import brand from 'fix-api/dummy/brand';
 import { withStyles } from '@material-ui/core/styles';
 import { PapperFix } from 'fix-components';
-import "./CR_CSS.css";
-import { TbTextInput, TxtInput, TxtSearch, TxtNoTransaksi, TxtComboBox, TbLabel } from 'fix-help/formik';
+import { TxtInput, TxtSearch, TxtNoTransaksi, TxtComboBox } from 'fix-help/formik';
 import Grid from '@material-ui/core/Grid';
-import classNames from 'classnames';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import styles from 'fix-components/Tables/tableStyle-jss';
-import RootRef from '@material-ui/core/RootRef';
+import CompSearch from 'fix/containers/F2/CompSearch';
+import DataGrid from 'fix/containers/F2/DataGrid';
+import "./CR_CSS.css";
 
 let ref    = {};
-let colFocus = 0;
-let rowFocus = 0;
-let changeRowColIndex = false;
+let Rendering = true;
+let rowIndex = 0;
+let colIndex = 0;
 
 class CR extends Component 
 {
-  constructor(props, context) {
+  constructor(props, context) 
+  {
     super(props, context);
+    
+    this.focus = {};
+    this.state = {openDialog:false, dg: [{no: 1}]};
+    
+    this.grid = 
+    [
+      {header: 'No', width: '60', item: 'no', require: false, edit: false, visible: true, labelRender: 'center', itemRender: ''},
+      {header: 'No Akun', width: '180', item: 'noakun', require: true, edit: true, visible: true, labelRender: 'search', itemRender: 'search'},
+      {header: 'Nama Akun', width: '200', item: 'namaakun', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
+      {header: 'Amount', width: '120', item: 'amount', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
+      {header: 'Foreign Amount', width: '120', item: 'foreignamount', require: false, edit: true, visible: true, labelRender: 'nominal', itemRender: 'nominal'},
+      {header: 'Note', width: '300', item: 'note', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
+      {header: 'Cost Center', width: '120', item: 'costcenter', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
+      {header: 'Divisi', width: '120', item: 'divisi', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
+      {header: 'Custom 1', width: '120', item: 'custom1', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
+    ];
 
-    this.setRef = (element) => 
+    this.progress = [
+      {label: 'Draft', value: 0},
+      {label: 'Need Approve', value: 1},
+      {label: 'Approve 1', value: 5},
+      {label: 'Approved', value: 2},
+    ]
+
+    this.data = [];
+  }
+
+  setRef = e => {if(e)ref[e.id] = e};
+
+  shouldComponentUpdate()
+  {
+    if(!Rendering)
     {
-      if(element)
-        ref[element.id] = element;
-    };
-
-    this.maxCol = 8;
-    this.maxData = 3;
-    this.maxRow = 5;
-
-    ref.tb = React.createRef();
-
-    this.state = {
-    };
-
-    for (let r = 0;r<this.maxData; r++)
-    {
-      for (let c = 0;c<this.maxCol; c++)
-      {
-        this.state['prevVal' + r + c] = '';
-        this.state['val' + r + c] = '';
-        this.state['editing' + r + c] = false;
-      }
+      Rendering = true;
+      return false;
     }
-
-    this.state = this.state;
+    return true;
   }
   
   componentDidMount()
   {
-    let arrTr = ref.tb.current.children[1].children;
-    let row, col, contentTR, contentTD;
-    for(row in arrTr)
+    this.focus.arrRef = [];
+    for ( let n in ref)
     {
-      contentTR = arrTr[row];
-      if(typeof contentTR == 'object')
+      if(ref[n].tabIndex !== undefined)
       {
-        for(col in contentTR.children)
+        if(parseInt(ref[n].tabIndex) >= 0)
         {
-          contentTD = contentTR.children[col];
-          if(typeof contentTD == 'object')
-          {
-            ref['td' + row + col] = contentTD;
-            ref['tbtxt' + row + col] = contentTD.children[0];
-          }
+          this.focus.arrRef.push({index: ref[n].tabIndex, id: ref[n].id});
         }
       }
     }
+    
+    this.focus.max = this.focus.arrRef.length;
+    this.focus.arrRef.sort((a, b) => parseInt(a.index) - parseInt(b.index));
+    this.focus.minIndex = this.focus.arrRef[0].index;
+    this.focus.maxIndex = this.focus.arrRef[this.focus.max-1].index;
+    this.focus.curIndex = 0;
 
-    this.setRowIndexColIndex(0, 0);
-    ref.txtterimadari.focus();
+    // ref.txtterimadari.onkeydown = this.handleKeyNavigator;
+    // ref.txtakunkas.onkeydown = this.handleKeyNavigator;
+    ref.txturaian.onkeydown = this.handleKeyNavigator;
+    ref.txttanggal.onkeydown = this.handleKeyNavigator;
+    ref.txtnotransaksi.onkeydown = this.handleKeyNavigator;
+    ref.txtuang.onkeydown = this.handleKeyNavigator;
+    ref.txtkurs.onkeydown = this.handleKeyNavigator;
+    // ref.txtprogress.onkeydown = this.handleKeyNavigator;
+
+    this.setFocus(ref.txtterimadari);
   }
 
-  tdDblClick = (row, col) =>
+  setFocus = (id) =>
   {
-    this.setState({['editing' + row  + col] : true});
-    ref['tbtxt' + rowFocus + colFocus].focus();
-  }
-
-  tdClick = (row, col) =>
-  {
-    // reset current prev focus
-    if((rowFocus != row || colFocus != col) && row < this.maxData)
-      this.resetCurrentPrevFocus(rowFocus, colFocus);
-
-    if (typeof ref['td' + row + col] === 'undefined' || row >= this.maxData)
+    if(id)
     {
-      ref['td' + rowFocus  + colFocus].focus();
-      return;
-    }
-
-    // set nextFocus
-    this.setRowIndexColIndex(row, col);
-  }
-  
-  resetCurrentPrevFocus = (row, col) => 
-  {
-    const { classes } = this.props;
-    if(col == 0)
-      if(this.state['editing' + row  + col])
-        this.setState({['editing' + row  + col] : false});
-
-    ref['td' + row + col].className = (row%2 == 0) ? classes.tdWhite : classes.tdReset;
-  }
-
-  rightKeys = () =>
-  {
-    // Right Arrow
-    if(colFocus == (this.maxCol-1))
-    {
-      if(rowFocus == (this.maxData-1))
-        return;
-
-      // reset current prev focus
-      this.resetCurrentPrevFocus(rowFocus, colFocus);
-
-      // set nextFocus
-      this.setRowIndexColIndex((rowFocus+1), 0);
+      this.focus.curId = id;
+      this.focus.curIndex = id.tabIndex;
+      id.focus();
     }
     else
-    {
-      // reset current prev focus
-      this.resetCurrentPrevFocus(rowFocus, colFocus);
+      this.focus.curId.focus();
+  }
 
-      // set nextFocus
-      this.setRowIndexColIndex(rowFocus, (colFocus+1));
+  nextFocus = (id) =>
+  {
+    let nextId;
+    if(id)
+    {
+      this.focus.curId = id;
+      this.focus.curIndex = id.tabIndex;
     }
-  }
-
-  setRowIndexColIndex = (rowIndex, colIndex) =>
-  {
-    changeRowColIndex = true;
-
-    rowFocus = rowIndex;
-    colFocus = colIndex;
-
-    ref['td' + rowFocus  + colFocus].className = this.props.classes.tdSelected;
-    ref['td' + rowFocus  + colFocus].focus();
-  }
-
-  leftKeys = () =>
-  {
-    // Left Arrow
-    if(colFocus == 0)
+    if(this.focus.curIndex >= this.focus.maxIndex)
     {
-      if(rowFocus == 0)
-        return;
-
-      // reset current prev Focus
-      this.resetCurrentPrevFocus(rowFocus, colFocus);
-
-      // set nextFocus
-      this.setRowIndexColIndex(rowFocus-1, this.maxCol-1);
+      this.setFocus(ref[this.focus.arrRef[0].id]);
     }
     else
-    {
-      // reset current prev Focus
-      this.resetCurrentPrevFocus(rowFocus, colFocus);
-
-      // set nextFocus
-      this.setRowIndexColIndex(rowFocus, colFocus-1);
+    {  
+      for ( let i in this.focus.arrRef)
+      {
+        if(this.focus.arrRef[i].index === this.focus.curIndex)
+        {
+          if(i == this.focus.max-1)
+          {
+            this.setFocus(ref[this.focus.arrRef[0]]);
+          }
+          else 
+          {
+            nextId = this.focus.arrRef[(parseInt(i)+1)].id;
+            this.setFocus(ref[nextId]);
+          }
+          break;
+        }
+      }
     }
   }
 
-  handleBlur = (row, col, value) =>
+  prevFocus = (id) =>
   {
-    if(ref['blur' + row + col] != false)
+    let prevId;
+    if(id)
     {
-      this.setState({['editing' + row  + col] : false, ['val' + rowFocus  + colFocus] : value});
+      this.focus.curId = id;
+      this.focus.curIndex = id.tabIndex;
+    }
+    if(this.focus.curIndex == this.focus.minIndex)
+    {
+      ref[this.focus.arrRef[this.focus.max-1].id].focus();
+    }
+    else
+    {  
+      for ( let i in this.focus.arrRef)
+      {
+        if(this.focus.arrRef[i].index === this.focus.curIndex)
+        {
+          if(i === 0)
+          {
+            this.setFocus(ref[this.focus.arrRef[this.focus.max-1].id]);
+          }
+          else
+          {
+            prevId = this.focus.arrRef[(parseInt(i)-1)].id;
+            this.setFocus(ref[prevId]);
+          }
+          break;
+        }
+      }
     }
   }
 
-  tdOnKeyDown = (e, row, col, value) =>
-  {
-    switch(e.key) 
-    {        
-      case 'Enter': // ENTER
-        ref['blur' + row + col] = false;
-        this.setState({['editing' + row  + col] : false, ['val' + row  + col] : value});
-        ref['td' + row  + col].focus();
-        e.preventDefault();
-        break;
-      case 'Escape': // ESC
-        ref['blur' + row + col] = false;
-        this.setState({['editing' + row  + col] : false, ['val' + row  + col] : this.state['prevVal' + row + col]});
-        ref['td' + row  + col].focus();
-        e.preventDefault();
-        break;
-      default:
-        ref['blur' + row + col] = true;
-    }
-  }
-
-  // User navigates table using keyboard
-  tableOnKeyDown = e => 
-  {
-    
-    if(!this.state['editing' + rowFocus  + colFocus])
-    {
-      switch(e.key) 
-      {        
-        case 'Tab':
-          if(!e.shiftKey)
-          {
-            ref.txttanggal.focus();
-            e.preventDefault();
-          }
-          else if(e.shiftKey)
-          {
-              ref.txturaian.focus();
-              e.preventDefault();
-          }
-          break;
-        case 'ArrowLeft': this.leftKeys(); break;
-        case 'ArrowRight': this.rightKeys(); break;
-        case 'ArrowUp': 
-            if (rowFocus-1 < 0)
-              return;
-              
-            // reset current prev Focus
-            this.resetCurrentPrevFocus(rowFocus, colFocus);
-  
-            // set nextFocus
-            this.setRowIndexColIndex((rowFocus-1), colFocus);
-          break;
-        case 'ArrowDown': 
-            if (rowFocus+1 >= this.maxData)
-              return;
-              
-            // reset current prev Focus
-            this.resetCurrentPrevFocus(rowFocus, colFocus);
-  
-            // set nextFocus
-            this.setRowIndexColIndex((rowFocus+1), colFocus);
-          break;
-        case 'Delete': 
-            this.setState({['val' + rowFocus  + colFocus] : ''});
-          break;
-        case 'F2': 
-            this.setState({['editing' + rowFocus  + colFocus] : true});
-          break;
-        default:
-          if(this.NumToChar(e.which) != '')
-          {
-            changeRowColIndex = false;
-
-            this.setState({
-              ['editing' + rowFocus  + colFocus] : true, 
-              ['prevVal' + rowFocus  + colFocus] : this.state['val' + rowFocus + colFocus], 
-              ['val' + rowFocus  + colFocus] : ''});
-            ref['tbtxt' + rowFocus + colFocus].focus();
-          }
-          else if(e.key != 'Tab')
-          {
-              e.preventDefault();
-          }
-
-  
-      } 
-    }
-    
-  };
-
-  NumToChar = num => 
-  {
-    if (num > 47 && num < 58) 
-    {
-      const strNums = "0123456789";
-      return strNums.charAt(num - 48);
-    } 
-    else if (num > 64 && num < 91) 
-    {
-      const strCaps = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      return strCaps.charAt(num - 65);
-    } 
-    else if (num > 96 && num < 123) 
-    {
-      const strLow = "abcdefghijklmnopqrstuvwxyz";
-      return strLow.charAt(num - 97);
-    } 
-    else if (num == 96) 
-    {
-      const strNol = "0";
-      return strNol.charAt(0);
-    } 
-    else 
-    {
-      return '';
-    }
-  }
-  
   handleKeyTerimaDari = e =>
   {
-    if(e.which === 9 && e.shiftKey)  // SHIFT + TAB
+    if((e.key === 'Tab' || e.key === 'ArrowUp') && e.shiftKey)  // SHIFT + TAB
     {
       ref.txtprogress.focus();
       e.preventDefault();
     }
-  }
-
-  handleKeyUraian = e =>
-  {
-    if(e.which == 9 && !e.shiftKey)  // TAB
+    else if(e.key === 'ArrowDown' || e.key === 'Enter')
     {
-      ref['td' + rowFocus  + colFocus].className = this.props.classes.tdSelected;
-      ref['td' + rowFocus  + colFocus].focus();
+      this.nextFocus(e.target);
       e.preventDefault();
     }
   }
+
+  handleKeyNavigator = e =>
+  {
+    switch(e.key)
+    {
+      case 'ArrowUp':
+        this.prevFocus(e.target);
+        e.preventDefault();
+        break;
+      case 'ArrowDown':
+      case 'Enter':
+        this.nextFocus(e.target);
+        e.preventDefault();
+        break;
+    }
+  }
+
   
   handleKeyTanggal = e =>
   {
     if(e.which == 9 && e.shiftKey)  // SHIFT + TAB
     {
-      ref['td' + rowFocus  + colFocus].className = this.props.classes.tdSelected;
-      ref['td' + rowFocus  + colFocus].focus();
-      e.preventDefault();
+      // ref['td' + rowFocus  + colFocus].className = this.props.classes.tdSelected;
+      // ref['td' + rowFocus  + colFocus].focus();
+      // e.preventDefault();
     }
   }
   
@@ -329,7 +214,7 @@ class CR extends Component
   {
     if(e.which == 9 && !e.shiftKey)  // TAB
     {
-      ref.txtterimadari.focus();
+      this.setFocus(ref.txtterimadari);
       e.preventDefault();
     }
   }
@@ -342,72 +227,104 @@ class CR extends Component
       switch(target)
       {
         case 'txtterimadari':
-          this.setState({txtterimadari: data.get('kkode')});
+            this.setState({txtterimadari: data.get('kkode'), lbltxtterimadari: data.get('knama')});
           break;
         case 'txtakunkas':
-          this.setState({txtakunkas: data.get('kkode')});
+          this.setState({txtakunkas: data.get('cnomor'), lbltxtakunkas: data.get('cnama')});
           break;
         case 'txtuang':
-          this.setState({txtuang: data.get('kkode')});
+          this.setState({txtuang: data.get('ckode')});
+          break;
+        case 'noakun':
+          const { dg } = this.state;
+          dg[rowIndex].noakun = data.get('cnomor');
+          dg[rowIndex].namaakun = data.get('cnama');
+          this.setState({dg: dg});
           break;
       }
     }
     else
     {
-
+      switch(target)
+      {
+        case 'txtterimadari':
+          this.setState({txtterimadari: '', lbltxtterimadari: ''});
+          break;
+        case 'txtakunkas':
+          this.setState({txtakunkas: '', lbltxtakunkas: ''});
+          break;
+        case 'txtuang':
+          this.setState({txtuang: ''});
+          break;
+        case 'tbtxt01':
+          this.setState({val01: '', val02: ''});
+          break;
+      }
     }
   }
 
+  handleOpenDialog = (source, target, current, targetDg) =>
+  {
+    ref[target].focus();
+    this.source = source;
+    this.target = (targetDg) ? targetDg : target;
+    this.current = current;
+    this.setState({openDialog:true});
+  }
+
+  handleCloseDialog = (param) =>
+  {
+    if(this.state.openDialog)
+    {
+      this.setFocus(ref[this.target]);
+      this.setState({openDialog:false});
+    }
+  }
+
+  handleUpdate = (id, value) =>
+  {
+    Rendering = false;
+    this.setState({[id] : value});
+  }
+
+  getData = (id, value, render) =>
+  {
+    if(id === 'dg') 
+    {
+      Rendering =false ;
+      this.setState({dg : value});
+    }
+    else if(id === 'rowIndex') rowIndex = value;
+    else if(id === 'colIndex') colIndex = value;
+    else ref[id] = value;
+  }
+ 
+  dgKeyDown = e => 
+  {
+    if(e.key === 'Tab') 
+    {        
+      if(!e.shiftKey)
+      {
+        this.nextFocus(ref.dg);
+        e.preventDefault();
+      }
+      else if(e.shiftKey)
+      {
+        this.prevFocus(ref.dg);
+        e.preventDefault();
+      }
+    } 
+  };
+
   render() 
   {
-    const { classes } = this.props;
     const title = brand.name + ' - Table';
     const description = brand.desc;
-    let itemsRow = [], itemsCol = [], itemsContent;  
-    let lastTabIndex = 9, width;
 
-    for (let row = 0;row<this.maxRow; row++)
-    {
-      itemsCol = [];
-      for (let col = 0;col<this.maxCol; col++)
-      {
-        if(row < this.maxData )
-        {
-          width = 100; itemsContent = [];
-          if(row == rowFocus && col == colFocus && this.state['editing' + row + col])
-          {
-            itemsContent.push(
-              <TbTextInput 
-                id={'tbtxt' + row + col} 
-                type="text" 
-                width="98%"
-                key={'ii' + row + col}
-                value={this.state['val' + row + col]}
-                onBlur={(value) => this.handleBlur(row, col, value)}
-                onKeyDown={(e, value, def) => this.tdOnKeyDown(e, row, col, value)}/>);
-          }
-          else
-            itemsContent.push(<TbLabel id={'tbtxt' + row + col} key={'ii' + row + col} value={this.state['val' + row + col]} width={width} />);
-          
-          itemsCol.push(
-            <TableCell 
-              id={'td' + row + col} 
-              style={{padding:"0", margin: '0'}} 
-              tabIndex = {++lastTabIndex}
-              width={width + "px"}
-              onClick={() => this.tdClick(row, col)} 
-              onDoubleClick={() => this.tdDblClick(row, col)} 
-              key={'i' + row + col}>{itemsContent}</TableCell>);
-        }
-        else
-          itemsCol.push(<TableCell key={'i' + row + col} onClick={() => this.tdClick(row, col)} ref={this.setRef}></TableCell>);
-      }
-      itemsRow.push(<TableRow key={'tr' + row}>{itemsCol}</TableRow>);
-    }
-    // style={{position:'fixed', left:`calc(250px-100%)`, right:'10'}}
-    console.log('RENDER CR');
+    let lastTabIndex = 5;
+    
     return (
-      <div>
+      <div id='divRoot'  ref={this.setRef}>
         <Helmet>
           <title>{title}</title>
           <meta name="description" content={description} />
@@ -419,49 +336,35 @@ class CR extends Component
         
         <PapperFix title="CRUD" icon="ios-arrow-round-forward" desc="CRUD">
           
-          <Grid container>
-            <Grid item xs={12} sm={8}>
-              <TxtSearch tabIndex={1} key={1} width='170' marginLabel='17%' id='txtterimadari' label='Terima Dari' SetVariable={this.SetVariable} onKeyDown={this.handleKeyTerimaDari} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} />
-              <TxtSearch tabIndex={2} key={2} width='170' marginLabel='17%' id='txtakunkas' label='Akun Kas [D]' SetVariable={this.SetVariable} setRef={this.setRef} placeholder=''  value={this.state['txtakunkas']} />
-              <TxtInput tabIndex={3} key={3} width='200' marginLabel='17%' id='txturaian' label='Uraian' onKeyDown={this.handleKeyUraian} setRef={this.setRef} placeholder=''  value={this.state['txturaian']} />
+          <Grid container id='gridContainer' ref={this.setRef}>
+            <Grid item xs={12} sm={7}>
+              <TxtSearch tabIndex={1} key={1} width='170' marginLabel='20%' id='txtterimadari' source='contact' primaryKey='kkode' label='Terima Dari' handleOpenDialog={this.handleOpenDialog} onKeyDown={this.handleKeyTerimaDari} onUpdate={this.handleUpdate} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} valueName={this.state['lbltxtterimadari']} SetVariable={this.SetVariable}/>
+              <TxtSearch tabIndex={2} key={2} width='170' marginLabel='20%' id='txtakunkas' source='coa' primaryKey='cnomor' label='Akun Kas [D]' handleOpenDialog={this.handleOpenDialog} onKeyDown={this.handleKeyNavigator} setRef={this.setRef} placeholder=''  onUpdate={this.handleUpdate} value={this.state['txtakunkas']} valueName={this.state['lbltxtakunkas']} SetVariable={this.SetVariable} />
+              <TxtInput tabIndex={3} key={3} width='250' marginLabel='20%' id='txturaian' label='Uraian' setRef={this.setRef} placeholder=''  value={this.state['txturaian']} />
             </Grid>
-            <Grid item xs={12} sm={4} style={{paddingLeft:'0px'}}>
+            <Grid item xs={12} sm={5}>
+              <div style={{width: '300px', float: 'right'}}>
               <TxtInput tabIndex={++lastTabIndex} key={lastTabIndex} type='date' width='200' marginLabel='100px' id='txttanggal' label='Tanggal' onKeyDown={this.handleKeyTanggal} setRef={this.setRef} placeholder=''  value={this.state['txttanggal']} />
-              <TxtNoTransaksi tabIndex={++lastTabIndex} key={lastTabIndex} width='140' marginLabel='100px' id='txtntoransaksi' label='No Transaksi' setRef={this.setRef} placeholder=''  value={this.state['txtntoransaksi']} />
+              <TxtNoTransaksi tabIndex={++lastTabIndex} key={lastTabIndex} width='140' marginLabel='100px' id='txtnotransaksi' label='No Transaksi' setRef={this.setRef} placeholder=''  value={this.state['txtntoransaksi']} />
               <Grid container>
                 <Grid item xs={12} sm={8}>
-                  <TxtSearch tabIndex={++lastTabIndex} key={lastTabIndex} width='70' marginLabel='100px' SetVariable={this.SetVariable} id='txtuang' label='Uang' setRef={this.setRef} placeholder=''  value={this.state['txtuang']} />
+                  <TxtSearch tabIndex={++lastTabIndex} key={lastTabIndex} width='70' marginLabel='100px' source='currency' primaryKey='ckode' handleOpenDialog={this.handleOpenDialog} id='txtuang' label='Uang' setRef={this.setRef} placeholder='' onKeyDown={this.handleKeyNavigator}  onUpdate={this.handleUpdate} value={this.state['txtuang']} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <TxtInput tabIndex={++lastTabIndex} key={lastTabIndex} width='55' marginLabel='43px' id='txtkurs' label='Kurs' setRef={this.setRef} placeholder=''  value={this.state['txtkurs']} />
                 </Grid>
               </Grid>
-              <TxtComboBox tabIndex={++lastTabIndex} key={lastTabIndex} width='200' marginLabel='100px' id='txtprogress' label='Progress' onKeyDown={this.handleKeyProgress} setRef={this.setRef} placeholder=''  value={this.state['txtprogress']} />
+              <TxtComboBox tabIndex={++lastTabIndex} data={this.progress} key={lastTabIndex} width='200' marginLabel='100px' id='txtprogress' label='Progress' onKeyDown={this.handleKeyProgress} setRef={this.setRef} placeholder=''  value={this.state['txtprogress']} />
+              </div>
             </Grid>
           </Grid>
-          <RootRef rootRef={ref.tb}>
-            <Table key={9} id='table' className={classNames(classes.table, classes.stripped, classes.bordered, classes.hovertd)}
-              onKeyDown={this.tableOnKeyDown} ref="tb" style={{margin:0}}>
-              <TableHead>
-                <TableRow>
-                      <TableCell>No</TableCell>
-                      <TableCell>No Akun</TableCell>
-                      <TableCell>Nama Akun</TableCell>
-                      <TableCell>Amount</TableCell>
-                      <TableCell>Foreign Amount</TableCell> 
-                      <TableCell>Note</TableCell>
-                      <TableCell>Cost Center</TableCell>
-                      <TableCell>Divisi</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                  {itemsRow}
-              </TableBody>
-            </Table>
-          </RootRef>
-          
+          <DataGrid id='dg' column={this.grid} getData={this.getData} data={this.state.dg} width={1050} height={200} setRef={this.setRef} tabIndex={4}
+            handleOpenDialog={this.handleOpenDialog} onKeyDown={this.dgKeyDown}  />
         </PapperFix>
 
+        <CompSearch onClose={() => this.handleCloseDialog('1')} open={this.state.openDialog} 
+        SetVariable={this.SetVariable} source={this.source} target={this.target} current={this.current}/>
+        
       </div>
     );
   }

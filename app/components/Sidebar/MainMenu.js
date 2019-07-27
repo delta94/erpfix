@@ -20,8 +20,8 @@ import styles from './sidebar-jss';
 class MainMenu extends React.Component {
   handleClick() {
     const { toggleDrawerOpen, loadTransition } = this.props;
-    toggleDrawerOpen();
-    loadTransition(false);
+    toggleDrawerOpen(false);
+    // loadTransition(false);
   }
 
   render() {

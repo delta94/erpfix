@@ -39,7 +39,10 @@ const styles = theme => ({
     marginTop: 4,
   },
   table: {
-    minWidth: 860,
+    minWidth: 7,
+    minHeight: 100,
+    overflowX: 'scroll',
+    padding: 0, margin: 0,
   },
   tableSmall: {
     minWidth: 500,
@@ -71,6 +74,12 @@ const styles = theme => ({
     margin: theme.spacing.unit,
     color: theme.palette.common.white
   },
+  iconVisible: {
+    visibility: 'visible'
+  },
+  iconHidden: {
+    visibility: 'hidden'
+  },
   /*
   -----------------------
   ** Table Style **
@@ -91,6 +100,10 @@ const styles = theme => ({
       background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 1) : lightBlue[50]
     }
   },
+  tdhover: {
+      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 1) : lightBlue[50],
+      fontSize: 12
+  },
   hovertd: {
     '& tbody td:hover': {
       background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 1) : lightBlue[50]
@@ -103,13 +116,16 @@ const styles = theme => ({
     background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 1) : lightBlue[50]
   },
   tdWhite: {
-    background: theme.palette.type === 'dark' ? fade(theme.palette.grey[200], 0) : 'white'
+    background: theme.palette.type === 'dark' ? fade(theme.palette.grey[200], 0) : 'white',
+    fontSize: 12
   },
   tdReset: {
-    background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 0) : theme.palette.grey[100]
+    background: theme.palette.type === 'dark' ? fade(theme.palette.grey[900], 0) : theme.palette.grey[100],
+    fontSize: 12
   },
   tdSelected: {
-      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[800], 0.5) : lightBlue[100]
+      background: theme.palette.type === 'dark' ? fade(theme.palette.grey[800], 0.5) : lightBlue[100],
+      fontSize: 12
   },
   bordered: {
     border: theme.palette.type === 'dark' ? `1px solid ${theme.palette.grey[900]}` : `1px solid ${theme.palette.primary.light}`,

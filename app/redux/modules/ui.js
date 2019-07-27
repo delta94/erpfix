@@ -1,5 +1,6 @@
 import { fromJS, List } from 'immutable';
 import MenuContent from 'dan-api/ui/menu';
+import history from 'utils/history';
 import {
   TOGGLE_SIDEBAR,
   OPEN_SUBMENU,
@@ -13,6 +14,26 @@ import {
   CHANGE_LAYOUT,
   LOAD_PAGE
 } from '../../actions/actionConstants';
+ 
+const getMenus = menuArray => menuArray.map(item => {
+  if (item.child) {
+    return item.child;
+  }
+  return false;
+});
+
+const setNavCollapse = (arr, curRoute) => {
+  let headMenu = 'not found';
+  for (let i = 0; i < arr.length; i += 1) {
+    for (let j = 0; j < arr[i].length; j += 1) {
+      if (arr[i][j].link === curRoute) {
+        headMenu = MenuContent[i].key;
+      }
+    }
+  }
+  return headMenu;
+};
+
 
 const initialState = {
   /* Settings for Themes and layout */
@@ -43,29 +64,12 @@ const initialState = {
     { name: 'Monochrome', value: 'greyTheme' },
   ]),
   sidebarOpen: true,
-  pageLoaded: false,
-  subMenuOpen: []
+  pageLoaded: true,
+  subMenuOpen: List([setNavCollapse(
+    getMenus(MenuContent),
+    history.location.pathname
+  )])
 };
-
-const getMenus = menuArray => menuArray.map(item => {
-  if (item.child) {
-    return item.child;
-  }
-  return false;
-});
-
-const setNavCollapse = (arr, curRoute) => {
-  let headMenu = 'not found';
-  for (let i = 0; i < arr.length; i += 1) {
-    for (let j = 0; j < arr[i].length; j += 1) {
-      if (arr[i][j].link === curRoute) {
-        headMenu = MenuContent[i].key;
-      }
-    }
-  }
-  return headMenu;
-};
-
 const initialImmutableState = fromJS(initialState);
 
 export default function reducer(state = initialImmutableState, action = {}) {
@@ -74,32 +78,35 @@ export default function reducer(state = initialImmutableState, action = {}) {
       return state.withMutations((mutableState) => {
         mutableState.set('sidebarOpen', !state.get('sidebarOpen'));
       });
-    case OPEN_SUBMENU:
-      return state.withMutations((mutableState) => {
-        // Set initial open parent menu
-        const activeParent = setNavCollapse(
-          getMenus(MenuContent),
-          action.initialLocation
-        );
-
-        // Once page loaded will expand the parent menu
-        if (action.initialLocation) {
-          mutableState.set('subMenuOpen', List([activeParent]));
-          return;
-        }
-
-        // Expand / Collapse parent menu
-        const menuList = state.get('subMenuOpen');
-        if (menuList.indexOf(action.key) > -1) {
-          if (action.keyParent) {
-            mutableState.set('subMenuOpen', List([action.keyParent]));
-          } else {
-            mutableState.set('subMenuOpen', List([]));
+      case OPEN_SUBMENU:
+        return state.withMutations((mutableState) => {
+          // Set initial open parent menu
+          const activeParent = setNavCollapse(
+            getMenus(MenuContent),
+            action.initialLocation
+          );
+  
+          // Once page loaded will expand the parent menu
+          if (action.initialLocation) {
+            mutableState.set('subMenuOpen', List([activeParent]));
+            return;
           }
-        } else {
-          mutableState.set('subMenuOpen', List([action.key, action.keyParent]));
-        }
-      });
+  
+          // Expand / Collapse parent menu
+          const menuList = state.get('subMenuOpen');
+          if (menuList.indexOf(action.key) > -1) {
+            if (action.keyParent) {
+              mutableState.set('subMenuOpen', List([action.keyParent]));
+            } else {
+              mutableState.set('subMenuOpen', List([]));
+            }
+          } else {
+            mutableState.set('subMenuOpen', List([action.key, action.keyParent]));
+          }
+          
+          if(action.isLoaded)
+            mutableState.set('pageLoaded', action.isLoaded);
+        });
     case CLOSE_ALL_SUBMENU:
       return state.withMutations((mutableState) => {
         mutableState.set('subMenuOpen', List([]));
