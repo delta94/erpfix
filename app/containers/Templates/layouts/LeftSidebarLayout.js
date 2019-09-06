@@ -65,12 +65,13 @@ class LeftSidebarLayout extends React.Component {
             horizontalMenu={false}
           />
           <section className={classNames(classes.mainWrap, classes.sidebarLayout)}>
-            {titleException.indexOf(history.location.pathname) < 0 && (
-              <div className={classes.pageTitle}>
+            
+          {/* <div className={classes.pageTitle}> */}
                 {/* <Typography component="h4" className={bgPosition === 'header' ? classes.darkTitle : classes.lightTitle} variant="h4">{place}</Typography> */}
-                <BreadCrumb separator=" / " theme={bgPosition === 'header' ? 'dark' : 'light'} location={history.location} />
-              </div>
-            )}
+                {/* <BreadCrumb separator=" / " theme={bgPosition === 'header' ? 'dark' : 'light'} location={history.location} /> */}
+              {/* </div> */}
+            {/* {titleException.indexOf(history.location.pathname) < 0 && ( */}
+            {/* )} */}
             { !pageLoaded && (<img src="/images/spinner.gif" alt="spinner" className={classes.circularProgress} />) }
             {/* <Fade
               in={pageLoaded}

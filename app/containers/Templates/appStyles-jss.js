@@ -130,6 +130,7 @@ const styles = theme => ({
   sidebarLayout: {},
   topbarLayout: {},
   mainWrap: {
+    marginTop: '-30px',
     height: '100%',
     position: 'relative',
     '& > div': {
