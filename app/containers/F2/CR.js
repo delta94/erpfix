@@ -90,6 +90,9 @@ class CR extends Component
     // ref.txtprogress.onkeydown = this.handleKeyNavigator;
 
     this.setFocus(ref.txtterimadari);
+    let computedStyle = getComputedStyle(ref.divRoot);
+    ref.width = computedStyle.width - 20;
+    // console.log(computedStyle.width);
   }
 
   setFocus = id =>
@@ -459,7 +462,7 @@ class CR extends Component
               </div>
             </Grid>
           </Grid>
-          <DataGrid id='dg' column={this.grid} onClose={this.handleCloseDialog} searchFilter={this.searchFilter} getData={this.getData} data={this.state.dgData} width={1050} height={200} setRef={this.setRef} tabIndex={4}
+          <DataGrid id='dg' column={this.grid} onClose={this.handleCloseDialog} searchFilter={this.searchFilter} getData={this.getData} data={this.state.dgData} width={ref.width} height={200} setRef={this.setRef} tabIndex={4}
             handleOpenDialog={this.handleOpenDialog} onKeyDown={this.dgKeyDown} SetVariable={this.SetVariable} dg={dg} />
         </PapperFix>
 
