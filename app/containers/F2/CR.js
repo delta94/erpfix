@@ -12,8 +12,7 @@ import "./CR_CSS.css";
 
 let ref    = {};
 let Rendering = true;
-let rowIndex = 0;
-let colIndex = 0;
+let dg = {};
 
 class CR extends Component 
 {
@@ -22,19 +21,21 @@ class CR extends Component
     super(props, context);
     
     this.focus = {};
-    this.state = {openDialog:false, dg: [{no: 1}]};
-    
+    this.state = {openDialog:false, dgData: [{no: 1}], txtmatauang: 'IDR',
+                  txturaian: '', txtkurs: '', txttanggal: ''}
     this.grid = 
     [
-      {header: 'No', width: '60', item: 'no', require: false, edit: false, visible: true, labelRender: 'center', itemRender: ''},
-      {header: 'No Akun', width: '180', item: 'noakun', require: true, edit: true, visible: true, labelRender: 'search', itemRender: 'search'},
-      {header: 'Nama Akun', width: '200', item: 'namaakun', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
-      {header: 'Amount', width: '120', item: 'amount', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
-      {header: 'Foreign Amount', width: '120', item: 'foreignamount', require: false, edit: true, visible: true, labelRender: 'nominal', itemRender: 'nominal'},
-      {header: 'Note', width: '300', item: 'note', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
-      {header: 'Cost Center', width: '120', item: 'costcenter', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
-      {header: 'Divisi', width: '120', item: 'divisi', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
-      {header: 'Custom 1', width: '120', item: 'custom1', require: false, edit: true, visible: true, labelRender: '', itemRender: ''},
+      {header: 'No', width: '60', item: 'no', require: false, edit: false, visible: true, skip: true, labelRender: 'center', itemRender: ''},
+      {header: 'No Akun', width: '180', item: 'noakun', require: true, edit: true, visible: true, skip: false, labelRender: 'search', itemRender: 'search'},
+      {header: 'Nama Akun', width: '200', item: 'namaakun', require: false, edit: true, visible: true, skip: true, labelRender: '', itemRender: ''},
+      {header: 'Amount', width: '120', item: 'amount', require: false, edit: true, visible: true, skip: false, labelRender: '', itemRender: ''},
+      {header: 'Foreign Amount', width: '120', item: 'foreignamount', require: false, edit: true, visible: true, skip: true, labelRender: 'nominal', itemRender: 'nominal'},
+      {header: 'Note', width: '300', item: 'note', require: false, edit: true, visible: true, skip: false, labelRender: '', itemRender: ''},
+      {header: 'Cost Center', width: '120', item: 'costcenter', require: false, edit: true, visible: true, skip: false, labelRender: '', itemRender: ''},
+      {header: 'Divisi', width: '120', item: 'divisi', require: false, edit: true, visible: true, skip: false, labelRender: '', itemRender: ''},
+      {header: 'Sub Divisi', width: '120', item: 'subdivisi', require: false, edit: true, visible: true, skip: false, labelRender: '', itemRender: ''},
+      {header: 'Proyek', width: '120', item: 'proyek', require: false, edit: true, visible: true, skip: false, labelRender: '', itemRender: ''},
+      {header: 'Custom 1', width: '120', item: 'custom1', require: false, edit: true, visible: true, skip: true, labelRender: '', itemRender: ''},
     ];
 
     this.progress = [
@@ -84,20 +85,25 @@ class CR extends Component
     ref.txturaian.onkeydown = this.handleKeyNavigator;
     ref.txttanggal.onkeydown = this.handleKeyNavigator;
     ref.txtnotransaksi.onkeydown = this.handleKeyNavigator;
-    ref.txtuang.onkeydown = this.handleKeyNavigator;
+    ref.txtmatauang.onkeydown = this.handleKeyNavigator;
     ref.txtkurs.onkeydown = this.handleKeyNavigator;
     // ref.txtprogress.onkeydown = this.handleKeyNavigator;
 
     this.setFocus(ref.txtterimadari);
   }
 
-  setFocus = (id) =>
+  setFocus = id =>
   {
     if(id)
     {
       this.focus.curId = id;
       this.focus.curIndex = id.tabIndex;
       id.focus();
+
+      if(id.id === 'dg')
+      {
+        dg.setRowIndexColIndex(dg.rowIndex, dg.colIndex);
+      }
     }
     else
       this.focus.curId.focus();
@@ -196,6 +202,13 @@ class CR extends Component
         this.nextFocus(e.target);
         e.preventDefault();
         break;
+      case 'Tab':
+          if(!e.shiftKey)
+            this.nextFocus(e.target);
+          else if(e.shiftKey)
+            this.prevFocus(e.target);
+          e.preventDefault();
+        break;
     }
   }
 
@@ -219,6 +232,70 @@ class CR extends Component
     }
   }
 
+  searchFilter = target =>
+  {
+    const { dgData } = this.state;
+    const s = this.state;
+
+    let source = '', id = '',  sort = '', apifilter = '', apipagenumber = 0, apilimit = 0, csfilter = '', csfield = 0, cscheckbox = false;
+
+    switch(target)
+    {
+      case 'txtterimadari':
+        source = 'contact';
+        apifilter = `kaktif=1 and kkode = "${s.txtterimadari}"`;
+        csfilter = 'kaktif=1';
+        csfield = 2;
+        sort = 'kkode asc';
+        break;
+      case "txtmatauang":
+        source = 'currency';
+        // apifilter = 'caktif=1 AND ckode = "'+s.txtmatauang+'"';
+        // csfilter = 'caktif=1';
+        sort = 'ckode asc';
+        break
+      case "txtakunkas":
+        source = 'coa';
+        apifilter = '(cgd = "D" and caktif = 1) and (ctipe = 0) and (cmatauang = "'+s.txtmatauang+'") and cnomor ="'+s.txtakunkas+'"';
+        csfilter = '(cgd = "D" and caktif = 1) and (ctipe = 0) and (cmatauang = "'+s.txtmatauang+'")';
+        csfield = 0;
+        sort = 'cnomor asc';
+        break;
+      case "noakun":
+        source = "coa";
+        apifilter = '(cgd = "D" and caktif = 1) and (cmatauang = "'+s.txtmatauang+'") and cnomor = "'+dgData[dg.rowIndex].noakun+'"';
+        csfilter = '(cgd = "D" and caktif = 1) and (cmatauang = "'+s.txtmatauang+'")';
+        sort = 'cnomor asc';
+        break;
+      case "costcenter": 
+        source = "cost_center";
+        apifilter = 'ccaktif=1 AND cckode = "'+dgData[dg.rowIndex].costcenter+'"';
+        csfilter = 'ccaktif=1';
+        sort = 'cckode asc';
+        break;
+      case "divisi":
+        source = "division";
+        apifilter = 'daktif=1 AND dkode = "'+dgData[dg.rowIndex].divisi+'"';
+        csfilter = 'daktif=1';
+        sort = 'dkode asc';
+        break;
+      case "subdivisi":
+        source = "subdivision";
+        apifilter = 'sdkode = "'+dgData[dg.rowIndex].subdivisi+'" AND sddivisi="'+dgData[dg.rowIndex].divisi+'" AND sdaktif=1';
+        csfilter = 'sdaktif=1 AND sddivisi="'+dgData[dg.rowIndex].divisi+'"';
+        sort = 'sddivisi asc';
+        break;
+      case "proyek":
+        source = "project";
+        apifilter = 'paktif=1 AND pkode = "'+dgData[dg.rowIndex].proyek+'"';
+        csfilter = 'paktif=1';
+        sort = 'pkode asc';
+        break;
+    }
+
+    return {source , id,  sort, apifilter, apipagenumber, apilimit, csfilter, csfield, cscheckbox};
+  }
+
   SetVariable = param =>
   {
     const { succes, target, data } = param;
@@ -227,19 +304,19 @@ class CR extends Component
       switch(target)
       {
         case 'txtterimadari':
-            this.setState({txtterimadari: data.get('kkode'), lbltxtterimadari: data.get('knama')});
+          this.setState({txtterimadari: data.get('kkode'), lbltxtterimadari: data.get('knama')});
           break;
         case 'txtakunkas':
           this.setState({txtakunkas: data.get('cnomor'), lbltxtakunkas: data.get('cnama')});
           break;
-        case 'txtuang':
-          this.setState({txtuang: data.get('ckode')});
+        case 'txtmatauang':
+          this.setState({txtmatauang: data.get('ckode')});
           break;
         case 'noakun':
-          const { dg } = this.state;
-          dg[rowIndex].noakun = data.get('cnomor');
-          dg[rowIndex].namaakun = data.get('cnama');
-          this.setState({dg: dg});
+          const { dgData } = this.state;
+          dgData[dg.rowIndex].noakun = data.get('cnomor');
+          dgData[dg.rowIndex].namaakun = data.get('cnama');
+          this.setState({dgData: dgData});
           break;
       }
     }
@@ -253,31 +330,53 @@ class CR extends Component
         case 'txtakunkas':
           this.setState({txtakunkas: '', lbltxtakunkas: ''});
           break;
-        case 'txtuang':
-          this.setState({txtuang: ''});
+        case 'txtmatauang':
+          this.setState({txtmatauang: ''});
           break;
-        case 'tbtxt01':
-          this.setState({val01: '', val02: ''});
+        case 'noakun':
+          const { dgData } = this.state;
+          dgData[dg.rowIndex].noakun = '';
+          dgData[dg.rowIndex].namaakun = '';
+          this.setState({dgData: dgData});
           break;
       }
     }
   }
 
-  handleOpenDialog = (source, target, current, targetDg) =>
+  handleOpenDialog = (source, target, current, targetDg, filter) =>
   {
     ref[target].focus();
     this.source = source;
     this.target = (targetDg) ? targetDg : target;
     this.current = current;
-    this.setState({openDialog:true});
+    this.filter = filter;
+    this.setState({openDialog: true});
   }
 
   handleCloseDialog = (param) =>
   {
     if(this.state.openDialog)
     {
-      this.setFocus(ref[this.target]);
+      if(this.target.indexOf('txt') === -1 && this.target.indexOf('cmb') === -1)
+      {
+        this.setFocus(ref.dg)
+        if(param)
+        {
+          if(param.succes)
+          {
+          }
+          else
+          {
+          }
+        }
+      }
+      else
+        this.setFocus(ref[this.target]);
       this.setState({openDialog:false});
+    }
+    else if(this.target.indexOf('txt') === -1 && this.target.indexOf('cmb') === -1)
+    {
+      this.setFocus(ref.dg)
     }
   }
 
@@ -289,13 +388,11 @@ class CR extends Component
 
   getData = (id, value, render) =>
   {
-    if(id === 'dg') 
+    if(id === 'dgData') 
     {
-      Rendering =false ;
-      this.setState({dg : value});
+      Rendering = (render) ? render : false;
+      this.setState({dgData : value});
     }
-    else if(id === 'rowIndex') rowIndex = value;
-    else if(id === 'colIndex') colIndex = value;
     else ref[id] = value;
   }
  
@@ -322,6 +419,10 @@ class CR extends Component
     const description = brand.desc;
 
     let lastTabIndex = 5;
+
+    
+    if(dg.focus)
+    dg.focus.focus();
     
     return (
       <div id='divRoot'  ref={this.setRef}>
@@ -335,11 +436,11 @@ class CR extends Component
         </Helmet>
         
         <PapperFix title="CRUD" icon="ios-arrow-round-forward" desc="CRUD">
-          
+           
           <Grid container id='gridContainer' ref={this.setRef}>
             <Grid item xs={12} sm={7}>
-              <TxtSearch tabIndex={1} key={1} width='170' marginLabel='20%' id='txtterimadari' source='contact' primaryKey='kkode' label='Terima Dari' handleOpenDialog={this.handleOpenDialog} onKeyDown={this.handleKeyTerimaDari} onUpdate={this.handleUpdate} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} valueName={this.state['lbltxtterimadari']} SetVariable={this.SetVariable}/>
-              <TxtSearch tabIndex={2} key={2} width='170' marginLabel='20%' id='txtakunkas' source='coa' primaryKey='cnomor' label='Akun Kas [D]' handleOpenDialog={this.handleOpenDialog} onKeyDown={this.handleKeyNavigator} setRef={this.setRef} placeholder=''  onUpdate={this.handleUpdate} value={this.state['txtakunkas']} valueName={this.state['lbltxtakunkas']} SetVariable={this.SetVariable} />
+              <TxtSearch tabIndex={1} key={1} width='170' marginLabel='20%' id='txtterimadari' searchFilter={this.searchFilter} label='Terima Dari' handleOpenDialog={this.handleOpenDialog} onKeyDown={this.handleKeyTerimaDari} onUpdate={this.handleUpdate} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} valueName={this.state['lbltxtterimadari']} SetVariable={this.SetVariable}/>
+              <TxtSearch tabIndex={2} key={2} width='170' marginLabel='20%' id='txtakunkas' searchFilter={this.searchFilter} label='Akun Kas [D]' handleOpenDialog={this.handleOpenDialog} onKeyDown={this.handleKeyNavigator} setRef={this.setRef} placeholder=''  onUpdate={this.handleUpdate} value={this.state['txtakunkas']} valueName={this.state['lbltxtakunkas']} SetVariable={this.SetVariable} />
               <TxtInput tabIndex={3} key={3} width='250' marginLabel='20%' id='txturaian' label='Uraian' setRef={this.setRef} placeholder=''  value={this.state['txturaian']} />
             </Grid>
             <Grid item xs={12} sm={5}>
@@ -348,7 +449,7 @@ class CR extends Component
               <TxtNoTransaksi tabIndex={++lastTabIndex} key={lastTabIndex} width='140' marginLabel='100px' id='txtnotransaksi' label='No Transaksi' setRef={this.setRef} placeholder=''  value={this.state['txtntoransaksi']} />
               <Grid container>
                 <Grid item xs={12} sm={8}>
-                  <TxtSearch tabIndex={++lastTabIndex} key={lastTabIndex} width='70' marginLabel='100px' source='currency' primaryKey='ckode' handleOpenDialog={this.handleOpenDialog} id='txtuang' label='Uang' setRef={this.setRef} placeholder='' onKeyDown={this.handleKeyNavigator}  onUpdate={this.handleUpdate} value={this.state['txtuang']} />
+                  <TxtSearch tabIndex={++lastTabIndex} key={lastTabIndex} width='70' marginLabel='100px' searchFilter={this.searchFilter} handleOpenDialog={this.handleOpenDialog} id='txtmatauang' label='Uang' setRef={this.setRef} placeholder='' onKeyDown={this.handleKeyNavigator}  SetVariable={this.SetVariable} onUpdate={this.handleUpdate} value={this.state['txtmatauang']} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <TxtInput tabIndex={++lastTabIndex} key={lastTabIndex} width='55' marginLabel='43px' id='txtkurs' label='Kurs' setRef={this.setRef} placeholder=''  value={this.state['txtkurs']} />
@@ -358,12 +459,12 @@ class CR extends Component
               </div>
             </Grid>
           </Grid>
-          <DataGrid id='dg' column={this.grid} getData={this.getData} data={this.state.dg} width={1050} height={200} setRef={this.setRef} tabIndex={4}
-            handleOpenDialog={this.handleOpenDialog} onKeyDown={this.dgKeyDown}  />
+          <DataGrid id='dg' column={this.grid} onClose={this.handleCloseDialog} searchFilter={this.searchFilter} getData={this.getData} data={this.state.dgData} width={1050} height={200} setRef={this.setRef} tabIndex={4}
+            handleOpenDialog={this.handleOpenDialog} onKeyDown={this.dgKeyDown} SetVariable={this.SetVariable} dg={dg} />
         </PapperFix>
 
-        <CompSearch onClose={() => this.handleCloseDialog('1')} open={this.state.openDialog} 
-        SetVariable={this.SetVariable} source={this.source} target={this.target} current={this.current}/>
+        <CompSearch onClose={this.handleCloseDialog} open={this.state.openDialog} 
+        SetVariable={this.SetVariable} source={this.source} target={this.target} current={this.current} filter={this.filter}/>
         
       </div>
     );

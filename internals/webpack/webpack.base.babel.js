@@ -183,6 +183,7 @@ module.exports = options => ({
       'fix-help': path.resolve(__dirname, '../../app/components/HelpFix'),
       'fix': path.resolve(__dirname, '../../app/'),
       'fix-components': path.resolve(__dirname, '../../app/components/'),
+      'fix-containers': path.resolve(__dirname, '../../app/containers/'),
       'fix-actions': path.resolve(__dirname, '../../app/actions/'),
       'fix-styles': path.resolve(__dirname, '../../app/styles/components/'),
       'fix-api': path.resolve(__dirname, '../../app/api/'),

@@ -49,11 +49,11 @@ class CompSearch extends React.Component
   componentWillReceiveProps = (nextProps) =>
   {
     // OPENING
-    const {source, current} = nextProps;
+    const {source, current, filter} = nextProps;
     if(!this.props.open && nextProps.open)
     {
       init = true;
-      API.GETDATA_COMPSEARCH({target: 'txtsearch', filter:'', filterSearch: (current)?current:'', page:1, limit: 10, source, operator: 'contains', column: 'All'}).then(this['API_Result']);  
+      API.GETDATA_COMPSEARCH({target: 'txtsearch', filter, filterSearch: (current)?current:'', page:1, limit: 10, source, operator: 'contains', column: 'All'}).then(this['API_Result']);  
     } 
   }
 
@@ -94,7 +94,7 @@ class CompSearch extends React.Component
             ref[`tr${i}`].addEventListener("dblclick", () =>
               { 
                 this.props.SetVariable({succes: true, target: this.props.target, data: this.state.dataTable.get(i)});
-                this.props.onClose();
+                this.props.onClose({target:'cs', succes: true});
               });
           }
         }
@@ -255,7 +255,7 @@ class CompSearch extends React.Component
   handleClose = () =>
   {
     this.props.SetVariable({succes: false, target: this.props.target, data: []});
-    this.props.onClose();
+    this.props.onClose({target:'cs', succes: false});
   }
 
   searchKeyDown = (e) =>
@@ -271,7 +271,15 @@ class CompSearch extends React.Component
         }
         break;
       case 'Enter': 
-        this.showDataPage(1);
+        if(ref.txtsearch.value === '')
+        {
+          this.nextFocus();
+          this.setRowIndex(rowIndex);
+        }
+        else
+        {
+          this.showDataPage(1);
+        }
         e.preventDefault();
         break;
       case 'Escape': 
@@ -408,12 +416,12 @@ class CompSearch extends React.Component
           else
           {
             this.setState({
-              title: data.title, 
-              header: data.header, 
-              dataTable: fromJS(dataTable.data),
-              count: dataTable.total,
-              page: dataTable.current_page,
-              limit: dataTable.per_page,
+              title: data.title || '', 
+              header: data.header || [], 
+              dataTable: fromJS(dataTable.data) || fromJS([]),
+              count: dataTable.total || 1,
+              page: dataTable.current_page || 1,
+              limit: dataTable.per_page || 1,
               last_page: (dataTable.last_page==0) ? 1 : dataTable.last_page,
             });
           }
@@ -436,8 +444,13 @@ class CompSearch extends React.Component
 
   handleClickChoose = () =>
   {
-    this.props.SetVariable({succes: true, target: this.props.target, data: this.state.dataTable.get(rowIndex)});
-    this.props.onClose();
+    if(this.state.dataTable.get(rowIndex))
+    {
+      this.props.SetVariable({succes: true, target: this.props.target, data: this.state.dataTable.get(rowIndex)});
+      this.props.onClose({target:'cs', succes: true});
+    }
+    else
+      alert('Select data first');
   }
 
   render()
@@ -589,7 +602,7 @@ class CompInput extends React.Component
   constructor(props, context) 
   {
     super(props, context);
-    this.state = {val: props.val, blur:true}
+    this.state = {val: props.val || '', blur:true}
   }
 
   componentWillReceiveProps = (nextProps) =>
@@ -597,7 +610,7 @@ class CompInput extends React.Component
     if(init)
     {
       init = false;
-      this.setState({val:nextProps.val});
+      this.setState({val:nextProps.val || ''});
     }
   }
 
@@ -607,11 +620,10 @@ class CompInput extends React.Component
     return (
       <input
         type="text"
-        value={this.state.val} 
+        value={this.state.val || ''} 
         ref={setRef || null} 
-        onChange={(e) => this.setState({val:e.target.value, blur:true})} 
+        onChange={(e) => this.setState({val:e.target.value || '', blur:true})} 
         onKeyDown={onKeyDown}
-        // onBlur={() => onBlur(this.state.val)}
         autoFocus={true} {...props} tabIndex={tabIndex} 
         key={keyProp} 
         label='Search' style={{width: `100%`}} id={id} className="text-input" autoFocus={true} placeholder='Filter in here'/>

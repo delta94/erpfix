@@ -67,3 +67,9 @@ var removed = myFish.splice(2);
   Initiating a saga action is usually done from your component. In this case by clicking on a button. Just make sure to wrap your onClick attribute with {} and use an arrow function. Don’t call the method directly from {this.mySagaAction()} as this will trigger eternal re-rendering loop.
 
 The correct way is: { () => { this.mySagaAction(); } }
+
+
+
+[] tidak fokus setelah alert delete datagrid
+[] saat set noakun di grid, seharusnya untuk f12 dan tekan icon search terus cancel tidak hapus data baris itu
+[] di textinput utama, ketik acak keluar comp search terus cancel pindah komponent tidak ngecek datanya itu ada apa ndak.

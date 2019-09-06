@@ -9,16 +9,18 @@ import TableRow from '@material-ui/core/TableRow';
 import RootRef from '@material-ui/core/RootRef';
 import styles from 'fix-components/Tables/tableStyle-jss';
 import { TbTextInput, TbLabel, TbLabelSearch } from 'fix-help/formik';
+import { AlertDialogConfirm } from 'fix-containers/UiElements/demos';
 
 let ref    = {};
-let rowIndex = 0;
 let rowOver = 0;
+let colOver = 0;
 let isOver = false;
 let colFocus = 0;
 let rowFocus = 0;
 let widthGrid = 0;
 let Rendering = true;
 let newLine = false;
+let alert = {};
 
 class DataGrid extends React.Component
 {
@@ -30,6 +32,7 @@ class DataGrid extends React.Component
     ref.tb2 = React.createRef();
 
     this.state = {prevVal: [], val: [], editing: [], dg: []}
+    this.props.getData('dgData', this.state.dg, true);
 
     this.headersRow = [];
     
@@ -37,15 +40,14 @@ class DataGrid extends React.Component
     
     for(let i in props.column)
     {
-      widthGrid += parseInt(props.column[i].width);
-
-      if(props.column[i].width === '0')
+      if(props.column[i].visible)
       {
-        this.headersRow.push(<TableCell id={'headersRow' + i}  style={{padding: '0 0'}} key={'headers' + i}>{props.column[i].header}</TableCell>);
-      }
-      else
-      {
-        this.headersRow.push(<TableCell id={'headersRow' + i}  style={{padding: '0 20px'}} width={props.column[i].width} key={'headers' + i}>{props.column[i].header}</TableCell>);
+        widthGrid += parseInt(props.column[i].width);
+  
+        if(props.column[i].width === '0')
+          this.headersRow.push(<TableCell id={'headersRow' + i}  style={{padding: '0 0'}} key={'headers' + i}>{props.column[i].header}</TableCell>);
+        else
+          this.headersRow.push(<TableCell id={'headersRow' + i}  style={{padding: '0 20px'}} width={props.column[i].width} key={'headers' + i}>{props.column[i].header}</TableCell>);
       }
     }
 
@@ -57,19 +59,35 @@ class DataGrid extends React.Component
       this.state['prevVal' + 0 + c] = '';
       this.state['editing' + 0 + c] = false;
     }
+
+    this.props.dg.rowIndex = this.getRowFocus;
+    this.props.dg.colIndex = this.getRowFocus;
+    this.props.dg.setRowIndexColIndex = this.setRowIndexColIndex;
+    this.props.dg.editRowIndexColIndex = this.editRowIndexColIndex;
   }
+
+  getRowFocus() {return rowFocus}
+  getColFocus() {return colFocus}
 
   dg = (row, col, value) =>
   {
     const { dg } = this.state;
     const { column } = this.props;
     
-    if(value)
+    if(value || value === '')
     {
       dg[row][column[col].item] = value;
     }
     
-    this.props.getData('dg', dg);
+    this.props.getData('dgData', dg);
+    return (dg[row][column[col].item] === undefined) ? '' : dg[row][column[col].item];
+  }
+
+  getDataDG = (row, col) =>
+  {
+    const { dg } = this.state;
+    const { column } = this.props;
+    
     return (dg[row][column[col].item] === undefined) ? '' : dg[row][column[col].item];
   }
 
@@ -81,7 +99,7 @@ class DataGrid extends React.Component
     newLine = true;
     
     dg[row] = {};
-    this.props.getData('dg', dg);
+    this.props.getData('dgData', dg);
     
     for (let col = 0;col<column.length; col++)
     {
@@ -92,7 +110,7 @@ class DataGrid extends React.Component
       else
         this.dg(row, col, '');
     }
-    this.props.getData('dg', dg, true);
+    this.props.getData('dgData', dg, true);
   }
 
   setRef = e => {
@@ -171,23 +189,72 @@ class DataGrid extends React.Component
   // User navigates table using keyboard
   dgKeyDown = e => 
   {
-    const { column } = this.props
+    const { column, handleOpenDialog } = this.props
+    const dg = this.props.data;
+
     if(!this.state['editing' + rowFocus  + colFocus])
     {
       switch(e.key) 
-      {        
-        // case 'Tab':
-        //   if(!e.shiftKey)
-        //   {
-        //     ref.txttanggal.focus();
-        //     e.preventDefault();
-        //   }
-        //   else if(e.shiftKey)
-        //   {
-        //       ref.txturaian.focus();
-        //       e.preventDefault();
-        //   }
-        //   break;
+      {
+        case 'Enter':
+          if(column[colFocus].labelRender === 'search' && this.getDataDG(rowFocus, colFocus) == '')
+          {
+            handleOpenDialog('coa', 'tbtxt' + rowFocus + colFocus, '', column[colFocus].item);
+            e.preventDefault();
+            return;
+          }
+
+          for(let i=(parseInt(colFocus)+1) ; i<column.length; i++)
+          {
+            if(!column[i].skip)
+            {
+              // reset current prev Focus
+              this.resetCurrentPrevFocus(rowFocus, colFocus);
+
+              // set nextFocus
+              this.setRowIndexColIndex(rowFocus, i);
+              e.preventDefault();
+              return;
+            }
+          }
+
+          // reset current prev Focus
+          this.resetCurrentPrevFocus(rowFocus, colFocus);
+          
+          // set nextFocus
+          this.setScroll(0);
+          for(let i=0; i<column.length; i++)
+          {
+            if(column[i].require && this.getDataDG(rowFocus, i) === '')
+            {
+              this.setRowIndexColIndex(rowFocus, i);
+              e.preventDefault();
+              return;
+            }
+          }
+          
+          if(rowFocus === this.state.dg.length-1)
+          { 
+            this.dgAdd();
+            rowFocus = this.state.dg.length-1;
+          }
+          else
+            rowFocus = parseInt(rowFocus) + 1;
+          colFocus = 0;
+          for(let i=0; i<column.length; i++)
+          {
+            if(!column[i].skip)
+            {
+              colFocus = i;
+              break;
+            }
+          }
+
+          // set nextFocus
+          this.setRowIndexColIndex(rowFocus, colFocus);
+          this.setState({dg: this.state.dg});
+          e.preventDefault();
+          break;
         case 'ArrowLeft': 
           // Left Arrow
           if(colFocus == 0)
@@ -251,7 +318,7 @@ class DataGrid extends React.Component
             const { column } = this.props;
             for (let col = 0;col<column.length; col++)
             {
-              if(column[col].require && this.dg(rowFocus, col) === '')
+              if(column[col].require && this.getDataDG(rowFocus, col) === '')
                 return;
             }
             
@@ -272,8 +339,40 @@ class DataGrid extends React.Component
           e.preventDefault();
           break;
         case 'Delete':
-          this.dg(rowFocus, colFocus, '');
-          column[colFocus].edit && this.setState({dg: this.state.dg});
+          let message = `Delete baris ke ${parseInt(rowFocus) + 1} ?`;
+          this.setRowIndexColIndex(rowFocus, colFocus);
+          alert.open(message, (res) => 
+            {
+              if(res.ok) 
+              {
+                this.resetCurrentPrevFocus(rowFocus, colFocus);
+                dg.splice(rowFocus,1)
+                if(rowFocus > dg.length-1)
+                  rowFocus = dg.length-1
+                if(dg.length === 0)
+                {
+                  this.dgAdd();
+                  rowFocus = 0;
+                }
+                else
+                {
+                  console.log('aa')
+                  for(let i=rowFocus ; i<dg.length; i++)
+                  {
+                    dg[i].no = (parseInt(i) + 1);
+                  }
+                  dg.focus = ref['td' + rowFocus + colFocus];
+                  this.props.getData('dgData', dg, true);
+                }
+              }
+              else
+              {
+              }
+              this.setRowIndexColIndex(rowFocus, colFocus);
+
+            }
+          );
+
           e.preventDefault();
           break;
         case 'F2': 
@@ -281,7 +380,7 @@ class DataGrid extends React.Component
           e.preventDefault();
           break;
         case 'F12': 
-          this.props.handleOpenDialog('coa', 'tbtxt' + rowFocus + colFocus, '', column[colFocus].item);
+          this.props.handleOpenDialog('coa', 'tbtxt' + rowFocus + colFocus, '', column[colFocus].item, '');
           e.preventDefault();
           break;
         default:
@@ -290,7 +389,7 @@ class DataGrid extends React.Component
             this.dg(rowFocus, colFocus, '');
             this.setState({ dg: this.state.dg,
               ['editing' + rowFocus  + colFocus] : true, 
-              ['prevVal' + rowFocus  + colFocus] : this.dg(rowFocus, colFocus)});
+              ['prevVal' + rowFocus  + colFocus] : this.getDataDG(rowFocus, colFocus)});
               ref['tbtxt' + rowFocus + colFocus].focus();
           }
           else
@@ -327,14 +426,21 @@ class DataGrid extends React.Component
     }
   }
 
+  editRowIndexColIndex = () =>
+  {
+      this.setState({ 'editing01': true});
+        // ref['tbtxt' + rowFocus + colFocus].focus();
+  }
+
   setRowIndexColIndex = (rowIndex, colIndex) =>
   {
     if(ref['td' + rowFocus  + colFocus])
     {
-      this.props.getData('rowIndex', rowIndex);
-      this.props.getData('colIndex', colIndex); 
       rowFocus = rowIndex;
       colFocus = colIndex;
+
+      this.props.dg.rowIndex = rowFocus;
+      this.props.dg.colIndex = colFocus;
 
       ref['td' + rowFocus  + colFocus].className = this.props.classes.tdSelected;
       ref['td' + rowFocus  + colFocus].focus();
@@ -371,6 +477,12 @@ class DataGrid extends React.Component
     else
       ref.divTable.scrollLeft = ref.divHeader.scrollLeftMax;
   }
+  
+  setScroll = onScroll =>
+  {
+    ref.divHeader.scrollLeft = onScroll;
+    ref.divTable.scrollLeft = onScroll;
+  }
 
   tdDblClick = (row, col) =>
   {
@@ -381,9 +493,24 @@ class DataGrid extends React.Component
     }
   }
   
+  tdBlur = (row, col) =>
+  {
+    const { classes } = this.props;
+
+    if(rowFocus === row && col === colFocus)
+    {
+      ref['td' + rowFocus  + colFocus].className = classes.tdhover;
+      ref['td' + rowFocus  + colFocus].focus();
+    }
+  }
+  
   tdOnMouseOver = (row, col) =>
   {
     const { classes } = this.props;
+
+    rowOver = row;
+    colOver = col;
+    isOver = true;
 
     if(parseInt(rowFocus) !== parseInt(row) || parseInt(colFocus) !== parseInt(col))
       ref[`td${row}${col}`].className = classes.tdhover;
@@ -391,25 +518,29 @@ class DataGrid extends React.Component
   
   tdOnMouseLeave = (row, col) =>
   {
-    const { classes } = this.props;
+    isOver = false;
+
     if(parseInt(rowFocus) !== parseInt(row) || parseInt(colFocus) !== parseInt(col))
       this.resetCurrentPrevFocus(row, col);
   }
 
   tdClick = (row, col) =>
   {
-    // reset current prev focus
-    if((rowFocus != row || colFocus != col) && row < this.state.dg.length)
-      this.resetCurrentPrevFocus(rowFocus, colFocus);
-
-    if (typeof ref['td' + row + col] === 'undefined' || row >= this.state.dg.length)
+    if(!this.state['editing' + rowFocus  + colFocus])
     {
-      ref['td' + rowFocus  + colFocus].focus();
-      return;
-    }
+      // reset current prev focus
+      if((rowFocus != row || colFocus != col) && row < this.state.dg.length)
+        this.resetCurrentPrevFocus(rowFocus, colFocus);
 
-    // set nextFocus
-    this.setRowIndexColIndex(row, col);
+      if (typeof ref['td' + row + col] === 'undefined' || row >= this.state.dg.length)
+      {
+        ref['td' + rowFocus  + colFocus].focus();
+        return;
+      }
+
+      // set nextFocus
+      this.setRowIndexColIndex(row, col);
+    }
   }
   
   resetCurrentPrevFocus = (row, col) => 
@@ -419,12 +550,12 @@ class DataGrid extends React.Component
       if(this.state['editing' + row  + col])
         this.setState({['editing' + row  + col] : false});
 
-    ref['td' + row + col].className = (row%2 == 0) ? classes.tdWhite : classes.tdReset;
+    ref['td' + row + col].className = (isOver && parseInt(rowOver) === parseInt(row) && parseInt(colOver) === parseInt(col)) ? classes.tdhover : (row%2 == 0) ? classes.tdWhite : classes.tdReset;
   }
 
   handleBlur = (row, col, value) =>
   {
-    if(ref['blur' + row + col] != false)
+    if(ref['blur' + row + col])
     {
       this.dg(rowFocus, colFocus, value);
       this.setState({['editing' + row  + col] : false, dg: this.state.dg});
@@ -447,37 +578,38 @@ class DataGrid extends React.Component
     {
       Rendering = false;
       this.dg(rowFocus, colFocus, val);
-      this.props.getData('dg', this.state.dg);
+      this.props.getData('dgData', this.state.dg);
       this.setState({dg : this.state.dg});
     }
   }
 
   render()
   {
-    const { classes, column, id, width, height, tabIndex } = this.props;
+    const { classes, column, id, width, height, tabIndex, searchFilter, handleOpenDialog, SetVariable, onClose } = this.props;
     const dg = this.props.data;
     let itemsRow = [], itemsCol = [], itemsContent;  
     let lastTabIndex = 9, valItem = '';
-    
     for (let row = 0;row<dg.length; row++)
     {
       itemsCol = [];
       for(let col in column)
       {
+        if(column[col].visible)
+        {
           itemsContent = [];
           valItem = dg[row][column[col].item];
           if(row == rowFocus && col == colFocus && this.state['editing' + row + col] && column[col].edit)
           {
             itemsContent.push(
-              <TbTextInput id={'tbtxt' + row + col} type="text" width="100%" key={'ii' + row + col} tabIndex={99}
+              <TbTextInput id={'tbtxt' + row + col} type="text" width="100%" key={'ii' + row + col} tabIndex={99} searchFilter={searchFilter} idDg={column[col].item}
                 value={valItem} onUpdate={(val) => this.handleUpdate(val, row, col)} onBlur={(value) => this.handleBlur(row, col, value)}
-                onKeyDown={(e, value, def) => this.tdOnKeyDown(e, row, col, value)}/>);
+                onKeyDown={(e, value, def) => this.tdOnKeyDown(e, row, col, value)} SetVariable={SetVariable} handleOpenDialog={handleOpenDialog}/>);
           }
           else
           {
             switch(column[col].labelRender)
             {
-              case 'search': itemsContent.push(<TbLabelSearch handleOpenDialog={this.props.handleOpenDialog} classes={classes} id={'tbtxt' + row + col} key={'ii' + row + col} idDg={column[col].item} source='coa' value={valItem} width={column[col].width} />);break;
+              case 'search': itemsContent.push(<TbLabelSearch handleOpenDialog={handleOpenDialog} classes={classes} id={'tbtxt' + row + col} key={'ii' + row + col} idDg={column[col].item} value={valItem} searchFilter={searchFilter} width={column[col].width} />);break;
               case 'center': itemsContent.push(<TbLabel id={'tbtxt' + row + col} key={'ii' + row + col} align='center' value={valItem} width={column[col].width} />);break;
               case 'right': itemsContent.push(<TbLabel id={'tbtxt' + row + col} key={'ii' + row + col} align='right' value={valItem} width={column[col].width} />);break;
               default: itemsContent.push(<TbLabel id={'tbtxt' + row + col} key={'ii' + row + col} value={valItem} width={column[col].width} />);
@@ -490,7 +622,9 @@ class DataGrid extends React.Component
               onMouseLeave={() => this.tdOnMouseLeave(row, col)}
               onClick={() => this.tdClick(row, col)} 
               onDoubleClick={() => this.tdDblClick(row, col)} 
+              onBlur={() => this.tdBlur(row, col)} 
               key={'i' + row + col}>{itemsContent} </TableCell>);
+        }
       }
       itemsRow.push(<TableRow key={'tr' + row}>{itemsCol}</TableRow>);
     }
@@ -506,10 +640,14 @@ class DataGrid extends React.Component
         </div>
         <div id="divTable" onScroll={this.handleScroll} ref={this.setRef} style={{width: `${width}px`, height: `${height}px`,overflowX: "auto"}}>
           <RootRef rootRef={ref.tb}>
-            <Table key={9} id={id} tabIndex={tabIndex} className={classNames(classes.table, classes.stripped, classes.bordered)} onKeyDown={this.dgKeyDown} ref="tb"  style={{width: widthGrid}}>
+            <Table key={9} id={id} tabIndex={tabIndex} 
+              className={classNames(classes.table, classes.stripped, classes.bordered)} onKeyDown={this.dgKeyDown} ref="tb" style={{width: widthGrid}}>
               <TableBody>{itemsRow}</TableBody>
             </Table>
           </RootRef>
+        </div>
+        <div>
+          <AlertDialogConfirm obj={alert} onClose={onClose} />
         </div>
       </>
     );

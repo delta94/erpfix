@@ -1,3 +1,5 @@
+import AlertDialogConfirm from "./DialogModal/AlertDialogConfirm";
+
 // Badges
 export CommonBadges from './Badges/CommonBadges';
 export VariantBadges from './Badges/VariantBadges';
@@ -71,6 +73,7 @@ export ProgressDelay from './Progress/ProgressDelay';
 // Dialog
 export ModalDemo from './DialogModal/ModalDemo';
 export AlertDialog from './DialogModal/AlertDialog';
+export AlertDialogConfirm from './DialogModal/AlertDialogConfirm';
 export SelectDialog from './DialogModal/SelectDialog';
 export SelectRadioDialog from './DialogModal/SelectRadioDialog';
 export FormDialog from './DialogModal/FormDialog';

@@ -27,26 +27,27 @@ export const TextInput = ({type,id,label,error,value,onChange,width,className,on
     <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
       <Label htmlFor={id} error={error} style={{width: '20%'}}>{label}</Label>
       <div>
-      <input style={{width: `${width}px`}} 
+      <input style={{width: `${width}px`, fontFamily: 'inherit'}} 
           id={id}
           className="text-input"
-          type={type} value={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
+          type={type} defaultValue={value || ''} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
         <InputFeedback error={error} />
       </div>
     </div>
   );
 };
 
-export const TxtInput = ({id,label,error,value,onChange,width,className,onKeyDown,autoFocus,setRef,marginLabel, ...props}) => {
+export const TxtInput = ({id,label,error,value,width,className,onChange,onKeyDown,autoFocus,setRef,marginLabel, ...props}) => {
+  value = value || ''
   const classes = classnames("input-group",{"animated shake error": !!error},className);
   return (
     <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
       <Label htmlFor={id} error={error} style={{width: marginLabel || '20%', paddingTop: '4px'}}>{label}</Label>
       <div>
-      <input style={{width: `${width}px`}} 
+      <input style={{width: `${width}px`, fontFamily: 'inherit'}} 
           id={id}
           className="text-input"
-          type='text' value={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
+          type='text' defaultValue={value || ''} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
         <InputFeedback error={error} />
       </div>
     </div>
@@ -58,7 +59,7 @@ export const TxtComboBox = ({id,label,error,value,onChange,width,className,onKey
   const childData = [];
   for(let i in data)
   {
-    childData.push(<option key={data[i].value + '|' + data[i].label} value={data[i].value}>{data[i].label}</option>);
+    childData.push(<option key={data[i].value + '|' + data[i].label} value={data[i].value || ''}>{data[i].label}</option>);
   }
   return (
     <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
@@ -85,9 +86,16 @@ export class TbLabelSearch extends React.Component
     this.refSearch.style.visibility = 'hidden';
   }
 
+  openCompSearch = () =>
+  {
+    const { id, searchFilter, handleOpenDialog, idDg } = this.props;
+    const { csfilter: filter, source } = searchFilter(idDg);
+    handleOpenDialog(source, id, '', idDg, filter);
+  }
+
   render() 
   {
-    const {value,width, classes, source, id, handleOpenDialog, idDg} = this.props;
+    const {value,width, classes} = this.props;
     let val = value || '';
     if(( val.length * 7) >= width)
       val = val.substr(0, Math.floor(width/8)-3 )
@@ -96,7 +104,7 @@ export class TbLabelSearch extends React.Component
       <div style={{height: '50px', paddingLeft: '10px', paddingTop: '10px'}} onMouseOver={this.mouseOver} onMouseLeave={this.mouseLeave} onKeyDown={this.keydown}>
         <div style={{paddingTop: '5px'}}>{val}</div> 
         <div style={{height: '20px',  textAlign: 'right', marginTop: (val)&&'-20px', visibility: 'hidden'}} ref={(e) => this.refSearch = e}>
-          <IconButton id="btn" title='Search' className={classes.btn} style={{width:'50px', height:'50px', marginTop: '-15px' }} onClick={() => handleOpenDialog(source, id, '', idDg)} >
+          <IconButton id="btn" title='Search' className={classes.btn} style={{width:'50px', height:'50px', marginTop: '-15px' }} onClick={() => this.openCompSearch()} >
             <Icon className={classes.icon}>search</Icon>
           </IconButton>
         </div>
@@ -108,15 +116,14 @@ export class TbLabelSearch extends React.Component
 export class TxtSearch extends React.Component 
 {
   ref = {};
-  state = {fix: true, val: this.props.value}
+  state = {fix: true, val: ''}
   blur = false;
 
   handleKeyInput = e =>
   {
     if(e.key === 'F12') 
     {
-      const { id, source, handleOpenDialog } = this.props;
-      handleOpenDialog(source, id);
+      this.openCompSearch();
       e.preventDefault();
     }
     else if(e.key === 'Enter') 
@@ -134,9 +141,11 @@ export class TxtSearch extends React.Component
       }
       else
       {
-        const { primaryKey, source } = this.props;
+        const { id, searchFilter } = this.props;
+        const { apifilter: filter, source } = searchFilter(id);
+
         this.blur = false;
-        API.GETDATA_COMPSEARCH({target:'txtsearch', filter: `${primaryKey} = '${this.state.val}'`, filterSearch: '', page: 1, limit: 1, source}).then(this['API_Result']);    
+        API.GETDATA_COMPSEARCH({target:'txtsearch', filter, filterSearch: '', page: 1, limit: 1, source}).then(this['API_Result']);    
         e.preventDefault();
       }
     }
@@ -160,9 +169,11 @@ export class TxtSearch extends React.Component
       this.props.SetVariable({succes: false, target: this.props.id, data: []});
     }
 
-    const { primaryKey, source } = this.props;
+    const { id, searchFilter } = this.props;
+    const { apifilter: filter, source } = searchFilter(id);
+
     this.blur = true;
-    API.GETDATA_COMPSEARCH({target:'txtsearch', filter: `${primaryKey} = '${this.state.val}'`, filterSearch: '', page: 1, limit: 1, source}).then(this['API_Result']);    
+    API.GETDATA_COMPSEARCH({target:'txtsearch', filter, filterSearch: '', page: 1, limit: 1, source}).then(this['API_Result']);    
   }
 
   API_Result = (param) =>
@@ -181,12 +192,13 @@ export class TxtSearch extends React.Component
             }
             else
             {
-              const { id, source, handleOpenDialog } = this.props;
-              handleOpenDialog(source, id, this.state.val);
+              this.openCompSearch(this.state.val);
             }
           }
           else
+          {
             this.props.SetVariable({succes, target: this.props.id, data: fromJS(data.data.data).get(0)});
+          }
           break;
       }
     }
@@ -195,6 +207,7 @@ export class TxtSearch extends React.Component
       switch(target)
       {
         case 'txtsearch':
+            this.props.SetVariable({succes: false, target: this.props.id, data: []});
           break;
       }
     }
@@ -212,13 +225,20 @@ export class TxtSearch extends React.Component
 
   componentWillReceiveProps = (nextProps) =>
   {
-    this.setState({val:nextProps.value, check: false});
+    this.setState({val:nextProps.value || '', check: false});
   }
 
   handleChange = e =>
   {
-    this.setState({val:e.target.value, check: true});
-    this.props.onUpdate(this.props.id, e.target.value);
+    this.setState({val:e.target.value || '', check: true});
+    this.props.onUpdate(this.props.id, e.target.value || '');
+  }
+
+  openCompSearch = (val) =>
+  {
+    const { id, searchFilter, handleOpenDialog } = this.props;
+    const { csfilter: filter, source } = searchFilter(id);
+    handleOpenDialog(source, id, val || '', '', filter);
   }
 
   render() 
@@ -229,18 +249,18 @@ export class TxtSearch extends React.Component
       <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
         <Label htmlFor={id} error={error} style={{width: marginLabel || '20%', paddingTop: '4px'}}>{label}</Label>
         <div>
-          <input style={{width: `${width}px`}} 
+          <input style={{width: `${width}px`, fontFamily: 'inherit'}} 
               id={id} tabIndex={tabIndex}
               className="text-input"
-              type='text' value={this.state.val} ref={this.setRef}
+              type='text' defaultValue={this.props.value || ''} value={this.state.val} ref={this.setRef}
               onKeyDown={this.handleKeyInput} 
               onChange={this.handleChange} 
-              // onKeyDown={(e) => onKeyDown(e, this.state.val)}
+              // onKeyDown={(e) => onKeyDown(e, this.state.val || '')}
               onBlur={this.handleBlur}
               autoFocus={true} {...props}/>
             <InputFeedback error={error} />
         </div>
-        <IconButton title='Search' className={classes.btn} style={{padding:3}} onClick={() => handleOpenDialog(source, id, '')} tabIndex={-1}>
+        <IconButton title='Search' className={classes.btn} style={{padding:3}} onClick={() => this.openCompSearch()} tabIndex={-1}>
           <Icon className={classes.icon}>search</Icon>
         </IconButton>
         {
@@ -258,13 +278,13 @@ export const TxtNoTransaksi = ({id,label,error,value,onChange,width,className,on
     <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0, alignItems:"center"}}>
       <Label htmlFor={id} error={error} style={{width: marginLabel || '20%'}}>{label}</Label>
       <div>
-      <input style={{width: `${width}px`}} 
+      <input style={{width: `${width}px`, fontFamily: 'inherit'}} 
           id={id}
           className="text-input"
-          type='text' value={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
+          type='text' defaultValue={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
         <InputFeedback error={error} />
       </div>
-      <input type="checkbox" className="text-input" id={'cbx' + id} style={{padding:0, margin:0, width:'20px'}}  tabIndex={-1}/>
+      <input type="checkbox" className="text-input" id={'cbx' + id} style={{padding:0, margin:0, width:'20px', fontFamily: 'inherit'}}  tabIndex={-1}/>
       <Label htmlFor={'cbx' + id} >Auto</Label>
     </div>
   );
@@ -275,7 +295,7 @@ export const Input = ({id,label,error,value,onChange,width,className,onKeyDown,a
       <input style={{width: `${width}`}}
           id={id}
           className="text-input"
-          type='text' value={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
+          type='text' defaultValue={value} ref={setRef || null} onChange={onChange} onKeyDown={onKeyDown} autoFocus={autoFocus || true} {...props}/>
   );
 };
 
@@ -284,7 +304,7 @@ export const ComboBox = ({id,label,error,value,toolTip, onChange,width,className
   const childData = [];
   for(let i in data)
   {
-    childData.push(<option key={data[i].value + '@' + data[i].label} value={data[i].value}>{data[i].label}</option>);
+    childData.push(<option key={data[i].value + '@' + data[i].label} value={data[i].value || ''}>{data[i].label}</option>);
   }
   return (
     <div className={classes} style={{display: 'flex',flexDirection:'row', margin:0}}>
@@ -309,7 +329,14 @@ export const TbLabel = ({value,width, align}) =>
 
 export class TbTextInput extends React.Component 
 {
-  state = {val: this.props.value}
+  state = {val: ''}
+
+  openCompSearch = () =>
+  {
+    const { id, searchFilter, handleOpenDialog, idDg } = this.props;
+    const { csfilter: filter, source } = searchFilter(idDg);
+    handleOpenDialog(source, id, '', idDg, filter);
+  }
 
   handleKeyDown = e =>
   {
@@ -317,25 +344,78 @@ export class TbTextInput extends React.Component
     {
       e.preventDefault();
     }
+    else if(e.key === 'F12') 
+    {
+      this.openCompSearch('');
+      e.preventDefault();
+    }
+    else if(e.key === 'Enter') 
+    {
+      const { idDg, searchFilter } = this.props;
+      const { apifilter: filter, source } = searchFilter(idDg);
+      if(source)
+      {
+        if(this.state.val === '')
+        {
+          this.props.SetVariable({succes: false, target: this.props.id, data: []});
+        }
+        else
+        {
+          this.props.SetVariable({succes: false, target: this.props.id, data: []});
+          API.GETDATA_COMPSEARCH({target:'txtsearch', filter, filterSearch: '', page: 1, limit: 1, source}).then(this['API_Result']);    
+          // e.preventDefault();
+        }
+      }
+      this.props.onKeyDown(e, this.state.val || '');
+    }
     else
     {
-      this.props.onKeyDown(e, this.state.val);
+      this.props.onKeyDown(e, this.state.val || '');
     }
   }
+
+  API_Result = (param) =>
+  {
+    const {succes, data, target} = param;
+    if(succes)
+    {
+      switch(target)
+      {
+        case 'txtsearch':
+          if(data.data.total === 0)
+          {
+            this.openCompSearch(this.state.val);
+          }
+          else
+            this.props.SetVariable({succes, target: this.props.idDg, data: fromJS(data.data.data).get(0)});
+          break;
+      }
+    }
+    else
+    {
+      switch(target)
+      {
+        case 'txtsearch':
+          break;
+      }
+    }
+  }
+
 
   render() 
   {
     const {id,value,onChange,width,onKeyDown,setRef,onBlur,onUpdate, ...props} = this.props;
     return (
-      <input style={{width: width, padding: '.7rem', paddingTop:'.9rem' } }
+      <input style={{width: width, padding: '.7rem', paddingTop:'.8rem', paddingLeft:'.6rem', fontFamily: 'inherit', height:'50px'}}
         id={id}
         className="tb-text-input"
         type="text"
-        value={this.state.val} 
+        defaultValue={this.props.value || ''} 
+        value={this.state.val}
         ref={setRef || null}
-        onChange={(e) => {this.setState({val:e.target.value});onUpdate(e.target.value)}} 
+        onChange={(e) => {this.setState({val:e.target.value || ''});onUpdate(e.target.value || '')}} 
         onKeyDown={this.handleKeyDown}
-        onBlur={() => onBlur(this.state.val)}
+        onBlur={() => onBlur(this.state.val || '')}
         autoFocus={true} {...props} />
       );
   }
@@ -343,22 +423,23 @@ export class TbTextInput extends React.Component
 
 class TbTextSearchComp extends React.Component 
 {
-  state = {val: this.props.value, blur:true}
+  state = {val: '', blur:true}
 
   render() 
   {
     const {id,value,onChange,width,onKeyDown,setRef,onBlur, classes,...props} = this.props;
     return (
       <div>
-        <input style={{width: width, padding: '.7rem', paddingTop:'.9rem' } }
+        <input style={{width: width, padding: '.7rem', paddingTop:'.9rem', fontFamily: 'inherit'}}
           id={id}
           className="tb-text-input"
           type="text"
-          value={this.state.val} 
+          defaultValue={this.props.value || ''} 
+          value={this.state.val}
           ref={setRef || null} 
-          onChange={(e) => this.setState({val:e.target.value, blur:true})} 
-          onKeyDown={(e) => onKeyDown(e, this.state.val)}
-          onBlur={() => onBlur(this.state.val)}
+          onChange={(e) => this.setState({val:e.target.value || '', blur:true})} 
+          onKeyDown={(e) => onKeyDown(e, this.state.val || '')}
+          onBlur={() => onBlur(this.state.val || '')}
           autoFocus={true} {...props} />
           
           <div style={{height: '20px', width: '50px'}}>
