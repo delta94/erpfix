@@ -7,7 +7,14 @@ import { TxtInput, TxtSearch, TxtNoTransaksi, TxtComboBox } from 'fix-help/formi
 import Grid from '@material-ui/core/Grid';
 import styles from 'fix-components/Tables/tableStyle-jss';
 import CompSearch from 'fix/containers/F2/CompSearch';
+import Toolbar from '@material-ui/core/Toolbar';
 import DataGrid from 'fix/containers/F2/DataGrid';
+import AddIcon from '@material-ui/icons/Add';
+import Icon from '@material-ui/core/Icon';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
+import withWidth, { isWidthUp } from '@material-ui/core/withWidth';
 import "./CR_CSS.css";
 
 let ref    = {};
@@ -423,6 +430,14 @@ class CR extends Component
 
     let lastTabIndex = 5;
 
+    const addIcon = (title, idIcon, handleClick) => 
+    {
+      return (
+        <IconButton title={title} onClick={handleClick} >
+          <Icon >{idIcon}</Icon>
+        </IconButton>
+      )
+    };
     
     if(dg.focus)
     dg.focus.focus();
@@ -439,7 +454,27 @@ class CR extends Component
         </Helmet>
         
         <PapperFix title="CRUD" icon="ios-arrow-round-forward" desc="CRUD">
-           
+
+        <Toolbar className={this.props.classes.toolbar} >
+          Cash Receipt
+          <div  />
+          {addIcon('Search', 'search', () => this.showSearch())}
+          {addIcon('Download CSV', 'cloud_download', () => this.clickDownloadCSV())}
+          {addIcon('Print', 'print', () => this.clickPrint())}
+          {addIcon('View Column', 'view_column', () => this.clickViewColumn())}
+          {addIcon('Filter', 'filter_list', () => addNewFilter(anchor))}
+          {addIcon('Show Data', 'refresh', () => this.showData(''))}
+          <div>
+            <Tooltip title="Add Item">
+              <Button variant="contained" onClick={() => addNew(anchor)} color="secondary">
+                <AddIcon />
+                {'Add New'}
+              </Button>
+            </Tooltip>
+          </div>
+        </Toolbar>
+        <br />
+
           <Grid container id='gridContainer' ref={this.setRef}>
             <Grid item xs={12} sm={7}>
               <TxtSearch tabIndex={1} key={1} width='170' marginLabel='20%' id='txtterimadari' searchFilter={this.searchFilter} label='Terima Dari' handleOpenDialog={this.handleOpenDialog} onKeyDown={this.handleKeyTerimaDari} onUpdate={this.handleUpdate} setRef={this.setRef} placeholder=''  value={this.state['txtterimadari']} valueName={this.state['lbltxtterimadari']} SetVariable={this.SetVariable}/>
@@ -474,4 +509,4 @@ class CR extends Component
   }
 }
 
-export default withStyles(styles)(CR);
+export default withWidth()(withStyles(styles)(CR));
