@@ -2,7 +2,7 @@
   "name": "erpfix",
   "version": "1.2.1",
   "description": "bussiness erp solution",
-  "homepage": "https://arrachman.github.io/erpfixpublic.github.io/",
+  "homepage": "./erpfix/build/index.html",
   "private": true,
   "engines": {
     "npm": ">=5",

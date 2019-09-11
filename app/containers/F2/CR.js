@@ -427,7 +427,6 @@ class CR extends Component
   {
     const title = brand.name + ' - Table';
     const description = brand.desc;
-    const { classes } = this.props;
 
     let lastTabIndex = 5;
 
@@ -473,10 +472,6 @@ class CR extends Component
               </Button>
             </Tooltip>
           </div>
-          <Button className={classes.button} variant="contained" size="small">
-            <Save className={classNames(classes.leftIcon, classes.iconSmall)} />
-            Save
-          </Button>
         </Toolbar>
         <br />
 
