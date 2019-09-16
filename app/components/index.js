@@ -144,4 +144,3 @@ export ErrorWrap from './Error/ErrorWrap';
 // Theme an Layout Settings
 export TemplateSettings from './TemplateSettings';
 // Sample
-export SampleComponent from './Mycomponent/SampleComponent';
