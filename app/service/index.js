@@ -10,7 +10,7 @@ import moment from "moment";
 // POST
 const postNewsBlog = (data) => Post('posts', false, data);
 const login = (data, target) => Post('f0/auth/login', true, data, target);
-const INSERT_DATA_AXIOS = (source, data, param) => INSERT_AXIOS(`f1/${source}/insert${param}`, true, data);
+const INSERT_DATA_AXIOS = (source, data, param) => INSERT_AXIOS(`f1/${source}${param}`, true, data);
 
 // PUT
 const updateNewsBlog = (data, id) => Put(`posts/${id}`, false, data);
@@ -146,6 +146,20 @@ const REMOVE_DATA = params => {
   });
 }
 
+const SAVE_TRANSACTION = params => {
+  return new Promise((resolve, reject) => {
+    INSERT_AXIOS(`f2/${params.source}/insert`, true, params).then(res => 
+    {
+      alert(res.data);
+    },
+    (err) => 
+    {
+      console.log(`err API: ${JSON.stringify(err.response.data)}`);
+      alert(err.response.data);
+    });
+  });
+}
+
 const INSERT_DATA = params => {
   const param = {"target"    : "INSERT_DATA"};
    
@@ -197,6 +211,7 @@ export const API = {
     GETDATA_COMPSEARCH,
     REMOVE_DATA,
     INSERT_DATA,
+    SAVE_TRANSACTION,
     UPDATE_DATA
 };
 
@@ -215,18 +230,32 @@ const data = {
     },
     abcde: 'fat'
 }
-export const formatDate = (data) =>
+// 2019-05-04 21:59:09	
+export const formatDate = (data, split) =>
 {
   if(data !== '')
   {
-    let arr = data.split("/");
-    if(arr.length == 3)
-    {
-      let arrTime = arr[2].split(' ');
-      if(arrTime.length == 2)
-        return `${arrTime[0]}-${arr[1]}-${arr[0]} ${arrTime[1]}`;
-      else
-       return `${arr[2]}-${arr[1]}-${arr[0]}`;
+    let arr;
+    if(split == "/") {
+      arr = data.split("/");
+      if(arr.length == 3)
+      {
+        let arrTime = arr[2].split(' ');
+        if(arrTime.length == 2)
+            return `${arr[0]}/${arr[1]}/${arrTime[0]} ${arrTime[1]}`;
+        else
+         return `${arr[0]}-${arr[1]}-${arr[2]}`;
+      }
+    } else {
+      arr = data.split("-");
+      if(arr.length == 3)
+      {
+        let arrTime = arr[2].split(' ');
+        if(arrTime.length == 2) {
+            return `${arrTime[0]}-${arr[1]}-${arr[0]} ${arrTime[1]}`;
+        } else
+         return `${arr[2]}-${arr[1]}-${arr[0]}`;
+      }
     }
   }
 

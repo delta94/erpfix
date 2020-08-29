@@ -15,7 +15,10 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import withWidth, { isWidthUp } from '@material-ui/core/withWidth';
+import classNames from 'classnames';
+import Typography from '@material-ui/core/Typography';
 import "./CR_CSS.css";
+import { API } from '../../service';
 
 let ref    = {};
 let Rendering = true;
@@ -308,8 +311,8 @@ class CR extends Component
 
   SetVariable = param =>
   {
-    const { succes, target, data } = param;
-    if(succes)
+    const { success, target, data } = param;
+    if(success)
     {
       switch(target)
       {
@@ -372,7 +375,7 @@ class CR extends Component
         this.setFocus(ref.dg)
         if(param)
         {
-          if(param.succes)
+          if(param.success)
           {
           }
           else
@@ -423,8 +426,20 @@ class CR extends Component
     } 
   };
 
+  clickSave = () =>
+  {
+    const userid = 1;
+    const isUpdate = 1;
+    const target = 'txtsearch';
+    const source = 'cr';
+    const utama = '{"crid":"76", "crcabang":"KI", "crlokasi":"I", "crsumber":"CR", "crautonotransaksi":"1", "crnotransaksi":"KIWIPCR20190114", "crtgl":"2019-01-15", "crkodepa":"19", "crkontak":"1", "crkontakperson":"", "crnorek":"110101.001", "cruraian":"Plastik Pembungkus", "crcatatan":"", "crmatauang":"IDR", "crkurs":"1", "crjumlah":"1500000", "crjumlahvalas":"0", "crjumlahbayar":"0", "crjumlahbayarvalas":"0", "crstatusbayar":"0", "crtgllunas":"1971-01-01", "crstatus":"2", "crstatussebelumnya":"0", "crjmlrevisi":"1", "crcetakanke":"0", "crisclose":"0", "crinputuser":"1", "crinputtgl":"2019-01-17", "crmodifikasiuser":"1", "crmodifikasitgl":"2019-05-23", "crposting":"1",  "crpostingtgl":"1971-01-01", "crcustomtext1":"", "crcustomtext2":"", "crcustomtext3":"", "crcustomtext4":"", "crcustomtext5":"", "crcustomint1":"0", "crcustomint2":"0", "crcustomint3":"0", "crcustomdbl1":"0", "crcustomdbl2":"0", "crcustomdbl3":"0", "crcustomdate1":"1971-01-01", "crcustomdate2":"1971-01-01", "crcustomdate3":"1971-01-01"}';
+    const detail = '[{"idcrdetail":"0", "idcr":"0", "norek":"110101.001", "matauang":"IDR", "kurs":"1", "jumlah":"500000", "jumlahvalas":"0", "catatan":"", "costcenter":"", "divisi":"", "subdivisi":"", "proyek":"", "urutan":"1", "isclose":"0", "customtext1":"", "customtext2":"", "customtext3":"", "customdbl1":"0", "customdbl2":"0", "customdbl3":"0", "customdate1":"1971-01-01", "customdate2":"1971-01-01", "customdate3":"1971-01-01"},{"idcrdetail":"0", "idcr":"0", "norek":"110101.001", "matauang":"IDR", "kurs":"1", "jumlah":"500000", "jumlahvalas":"0", "catatan":"", "costcenter":"", "divisi":"", "subdivisi":"", "proyek":"", "urutan":"2", "isclose":"0", "customtext1":"", "customtext2":"", "customtext3":"", "customdbl1":"0", "customdbl2":"0", "customdbl3":"0", "customdate1":"1971-01-01", "customdate2":"1971-01-01", "customdate3":"1971-01-01"}]';
+    API.SAVE_TRANSACTION({target, source, userid, isUpdate, utama, detail}).then(this['API_Result']);  
+  }
+
   render() 
   {
+    const { classes } = this.props;
     const title = brand.name + ' - Table';
     const description = brand.desc;
 
@@ -455,23 +470,14 @@ class CR extends Component
         
         <PapperFix title="CRUD" icon="ios-arrow-round-forward" desc="CRUD">
 
-        <Toolbar className={this.props.classes.toolbar} >
-          Cash Receipt
-          <div  />
-          {addIcon('Search', 'search', () => this.showSearch())}
-          {addIcon('Download CSV', 'cloud_download', () => this.clickDownloadCSV())}
-          {addIcon('Print', 'print', () => this.clickPrint())}
-          {addIcon('View Column', 'view_column', () => this.clickViewColumn())}
-          {addIcon('Filter', 'filter_list', () => addNewFilter(anchor))}
-          {addIcon('Show Data', 'refresh', () => this.showData(''))}
-          <div>
-            <Tooltip title="Add Item">
-              <Button variant="contained" onClick={() => addNew(anchor)} color="secondary">
-                <AddIcon />
-                {'Add New'}
-              </Button>
-            </Tooltip>
-          </div>
+        <Toolbar className={classes.toolbar} >
+          <div className={classes.title}>
+            <Typography variant="h6">Cash Receipt</Typography>
+          </div> 
+          <div className={classes.spacer} />
+          {addIcon('Reset', 'refresh', () => this.showData(''))}
+          {addIcon('Open Transaction', 'folder_open', () => this.showData(''))}
+          {addIcon('Save', 'save', () => this.clickSave(''))}
         </Toolbar>
         <br />
 

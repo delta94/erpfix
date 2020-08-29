@@ -137,7 +137,7 @@ export class TxtSearch extends React.Component
       }
       else if(this.state.val === '')
       {
-        this.props.SetVariable({succes: false, target: this.props.id, data: []});
+        this.props.SetVariable({success: false, target: this.props.id, data: []});
       }
       else
       {
@@ -166,7 +166,7 @@ export class TxtSearch extends React.Component
     }
     else if(this.state.val === '')
     {
-      this.props.SetVariable({succes: false, target: this.props.id, data: []});
+      this.props.SetVariable({success: false, target: this.props.id, data: []});
     }
 
     const { id, searchFilter } = this.props;
@@ -178,8 +178,8 @@ export class TxtSearch extends React.Component
 
   API_Result = (param) =>
   {
-    const {succes, data, target} = param;
-    if(succes)
+    const {success, data, target} = param;
+    if(success)
     {
       switch(target)
       {
@@ -188,7 +188,7 @@ export class TxtSearch extends React.Component
           {
             if(this.blur)
             {
-              this.props.SetVariable({succes: false, target: this.props.id, data: []});
+              this.props.SetVariable({success: false, target: this.props.id, data: []});
             }
             else
             {
@@ -197,7 +197,7 @@ export class TxtSearch extends React.Component
           }
           else
           {
-            this.props.SetVariable({succes, target: this.props.id, data: fromJS(data.data.data).get(0)});
+            this.props.SetVariable({success, target: this.props.id, data: fromJS(data.data.data).get(0)});
           }
           break;
       }
@@ -207,7 +207,7 @@ export class TxtSearch extends React.Component
       switch(target)
       {
         case 'txtsearch':
-            this.props.SetVariable({succes: false, target: this.props.id, data: []});
+            this.props.SetVariable({success: false, target: this.props.id, data: []});
           break;
       }
     }
@@ -357,11 +357,11 @@ export class TbTextInput extends React.Component
       {
         if(this.state.val === '')
         {
-          this.props.SetVariable({succes: false, target: this.props.id, data: []});
+          this.props.SetVariable({success: false, target: this.props.id, data: []});
         }
         else
         {
-          this.props.SetVariable({succes: false, target: this.props.id, data: []});
+          this.props.SetVariable({success: false, target: this.props.id, data: []});
           API.GETDATA_COMPSEARCH({target:'txtsearch', filter, filterSearch: '', page: 1, limit: 1, source}).then(this['API_Result']);    
           // e.preventDefault();
         }
@@ -376,8 +376,8 @@ export class TbTextInput extends React.Component
 
   API_Result = (param) =>
   {
-    const {succes, data, target} = param;
-    if(succes)
+    const {success, data, target} = param;
+    if(success)
     {
       switch(target)
       {
@@ -387,7 +387,7 @@ export class TbTextInput extends React.Component
             this.openCompSearch(this.state.val);
           }
           else
-            this.props.SetVariable({succes, target: this.props.idDg, data: fromJS(data.data.data).get(0)});
+            this.props.SetVariable({success, target: this.props.idDg, data: fromJS(data.data.data).get(0)});
           break;
       }
     }

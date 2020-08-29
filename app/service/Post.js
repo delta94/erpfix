@@ -6,8 +6,6 @@ const Post = (path, root, data, target) => {
         let dataHeader = {headers: {
             'Authorization': `Bearer ${localStorage.getItem("fixToken")}`,
             'Accept': 'application/json',
-            'Origin': '*',
-            'Content-Type': 'application/json'
         }};
         axios.post(`${root ? Onlineroot : RootPath }/${path}?param={"target":"${target}"}`, data, dataHeader)
         .then((res)=> {

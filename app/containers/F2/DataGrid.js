@@ -612,7 +612,8 @@ class DataGrid extends React.Component
               case 'search': itemsContent.push(<TbLabelSearch handleOpenDialog={handleOpenDialog} classes={classes} id={'tbtxt' + row + col} key={'ii' + row + col} idDg={column[col].item} value={valItem} searchFilter={searchFilter} width={column[col].width} />);break;
               case 'center': itemsContent.push(<TbLabel id={'tbtxt' + row + col} key={'ii' + row + col} align='center' value={valItem} width={column[col].width} />);break;
               case 'right': itemsContent.push(<TbLabel id={'tbtxt' + row + col} key={'ii' + row + col} align='right' value={valItem} width={column[col].width} />);break;
-              default: itemsContent.push(<TbLabel id={'tbtxt' + row + col} key={'ii' + row + col} value={valItem} width={column[col].width} />);
+              default: 
+              itemsContent.push(<TbLabel id={'tbtxt' + row + col} key={'ii' + row + col} value={valItem} width={column[col].width} />);
             }
           }       
           

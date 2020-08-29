@@ -93,8 +93,8 @@ class CompSearch extends React.Component
           {
             ref[`tr${i}`].addEventListener("dblclick", () =>
               { 
-                this.props.SetVariable({succes: true, target: this.props.target, data: this.state.dataTable.get(i)});
-                this.props.onClose({target:'cs', succes: true});
+                this.props.SetVariable({success: true, target: this.props.target, data: this.state.dataTable.get(i)});
+                this.props.onClose({target:'cs', success: true});
               });
           }
         }
@@ -254,8 +254,8 @@ class CompSearch extends React.Component
 
   handleClose = () =>
   {
-    this.props.SetVariable({succes: false, target: this.props.target, data: []});
-    this.props.onClose({target:'cs', succes: false});
+    this.props.SetVariable({success: false, target: this.props.target, data: []});
+    this.props.onClose({target:'cs', success: false});
   }
 
   searchKeyDown = (e) =>
@@ -388,8 +388,8 @@ class CompSearch extends React.Component
 
   API_Result = (param) =>
   {
-    const {succes, data, target} = param;
-    if(succes)
+    const {success, data, target} = param;
+    if(success)
     {
       switch(target)
       {
@@ -446,8 +446,8 @@ class CompSearch extends React.Component
   {
     if(this.state.dataTable.get(rowIndex))
     {
-      this.props.SetVariable({succes: true, target: this.props.target, data: this.state.dataTable.get(rowIndex)});
-      this.props.onClose({target:'cs', succes: true});
+      this.props.SetVariable({success: true, target: this.props.target, data: this.state.dataTable.get(rowIndex)});
+      this.props.onClose({target:'cs', success: true});
     }
     else
       alert('Select data first');

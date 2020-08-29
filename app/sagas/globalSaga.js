@@ -20,7 +20,7 @@ export function* REMOVE_ROW_FORM(action)
 {
   const { branch, item, pagging, source, primaryKey } = action;
   const res = yield call(API.REMOVE_DATA, {id: item.get(primaryKey), source});
-  if(res.succes === true)
+  if(res.success === true)
   {
     yield put({ type: `${branch}/REMOVE_ROW_FORM_SAGA`, res, branch});
     const res = yield call(API.GET_DATA, {filter: '', page: pagging.page, limit: pagging.limit, source, primaryKey});
@@ -38,7 +38,7 @@ export function* INSERT_DATA(action)
   else
     res = yield call(API.UPDATE_DATA, {id: editingId, data: newData, source});
 
-  if(res.succes)
+  if(res.success)
   {
     const res = yield call(API.GET_DATA, {filter: '', page: pagging.page, limit: pagging.limit, source});
     yield put({ type: `${branch}/${FETCH_DATA_FORM}`, res, branch, primaryKey});

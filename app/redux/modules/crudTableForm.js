@@ -33,22 +33,27 @@ export default function reducer(state = fromJS(initialState), action = {})
             .set('data`Table', List([]));
         });
       case `${FETCH_DATA_FORM}`:
-        if(action.res.succes)
+        if(action.res.success)
         {
+          try{ 
           const { primaryKey } = action;
           let data = action.res.data;
-          let no = (data.current_page*data.per_page)-data.per_page;
+          let no = (data.pagination.currentPage*data.pagination.perPage)-data.pagination.perPage;
           data.data.map((val, i) => {
             data.data[i]['no'] = (i+1+no);
             data.data[i]['id'] = data.data[i][primaryKey];
           });
           return state.withMutations((mutableState) => {
-            mutableState.set('count', data.total);
-            mutableState.set('page', data.current_page);
-            mutableState.set('limit', data.per_page);
-            mutableState.set('last_page', (data.last_page==0) ? 1 : data.last_page );
+            mutableState.set('count', data.pagination.total);
+            mutableState.set('page', data.pagination.currentPage);
+            mutableState.set('limit', data.pagination.perPage);
+            mutableState.set('last_page', (data.pagination.lastPage==0) ? 1 : data.pagination.lastPage );
             mutableState.set('dataTable', fromJS(data.data));
           });
+          }catch(err){
+            console.log('err', err)
+            return state
+          }
         }
         else
         {

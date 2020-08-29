@@ -40,7 +40,7 @@ const styles = theme => ({
   },
   table: {
     minWidth: 7,
-    minHeight: 100,
+    // minHeight: 100,
     overflowX: 'scroll',
     padding: 0, margin: 0,
   },

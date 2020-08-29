@@ -28,7 +28,7 @@ class Form extends Component
       Object.keys(dataFormatDate).map((i) => {
         if(col === dataFormatDate[i])
         {
-          item = item.set(col, formatDate(val))
+          item = item.set(col, formatDate(val, "/"))
         }
       });
 

@@ -2,7 +2,7 @@ import axios from 'axios';
 import {Onlineroot, RootPath} from './Config';
 
 export const INSERT_AXIOS = (path, root, data) => {
-    return axios({method:'post', url:`${root ? Onlineroot : RootPath }/${path}`, data}, {headers: {
+    return axios({method:'POST', url:`${root ? Onlineroot : RootPath }/${path}`, data}, {headers: {
         'Authorization': `Bearer ${localStorage.getItem("fixToken")}`,
         'Accept': 'application/json',
         'Access-Control-Allow-Origin': '*',

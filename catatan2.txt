@@ -91,7 +91,7 @@ class CrudTbFormDemo extends Component {
   } 
 
   F_APIResult = (res) => {
-      if(res.succes == 'true')
+      if(res.success == 'true')
       {
           switch(res.target)
           {

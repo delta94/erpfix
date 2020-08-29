@@ -18,8 +18,7 @@ export const Delete = (path, root) => {
 
 
 export const DELETE_AXIOS = (path, root) => {
-    console.log(`${root ? Onlineroot : RootPath }/${path}`);
-    return axios({method:'get', url:`${root ? Onlineroot : RootPath }/${path}`}, {headers: {
+    return axios({method:'delete', url:`${root ? Onlineroot : RootPath }/${path}`}, {headers: {
         'Authorization': `Bearer ${localStorage.getItem("fixToken")}`,
         'Accept': 'application/json',
         'Access-Control-Allow-Origin': '*',

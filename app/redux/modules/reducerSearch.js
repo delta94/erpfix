@@ -11,7 +11,7 @@ export default function reducer(state = fromJS(initialState), action = {})
     switch (param) 
     {
       case `FETCH_DATA_FORM`:
-        if(action.res.succes)
+        if(action.res.success)
         {
           let data = action.res.data.data;
           let no = (data.current_page*data.per_page)-data.per_page;
